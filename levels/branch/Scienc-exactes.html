@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>منصة النجاح | علوم دقيقة</title>
+
+    <meta name="description" content="منصة النجاح التعليمية توفر فروض واختبارات مصححة بصيغة PDF لجميع الأطوار التعليمية في الجزائر. تحميل مجاني لنماذج الفروض والاختبارات مع التصحيح النموذجي لجميع المواد الدراسية.">
+    <meta name="keywords" content="منصة النجاح, فروض, اختبارات, فروض واختبارات, فروض واختبارات PDF, فروض ابتدائي, فروض متوسط, فروض ثانوي, اختبارات ابتدائي, اختبارات متوسط, اختبارات ثانوي, فروض مع التصحيح, اختبارات مع الحل, نماذج تعليمية, تحميل PDF, التعليم في الجزائر, السنة الأولى ابتدائي, السنة الثانية ابتدائي, السنة الثالثة ابتدائي, السنة الرابعة ابتدائي, السنة الخامسة ابتدائي, الأولى متوسط, الثانية متوسط, الثالثة متوسط, الرابعة متوسط, الأولى ثانوي, الثانية ثانوي, الثالثة ثانوي">
+    <meta name="author" content="منصة النجاح">
+    <meta name="language" content="Arabic">
+    <meta name="robots" content="index, follow, max-image-preview:large">
+    <meta name="googlebot" content="index, follow">
+
+    <link rel="canonical" href="https://imadtbn.github.io/nadjah/">
+    <meta name="theme-color" content="#0f172a">
+    <!-- Favicon -->
+
+    <link rel="icon" type="image/png" sizes="32x32" href="../../assets/images/icon22.png">
+    <link rel="apple-touch-icon" href="../../assets/images/icon22.png">
+
+    <link rel="preload" as="image" href="../../assets/images/icon22.png" alt="icon" sizes="32x32" loading="lazy">
+
+    <!-- Open Graph -->
+    <meta property="og:locale" content="ar_DZ">
+    <meta property="og:type" content="website">
+    <meta property="og:site_name" content="منصة النجاح">
+
+    <meta property="og:title" content="منصة النجاح | فروض واختبارات مصححة PDF لجميع الأطوار التعليمية">
+    <meta property="og:description" content="تحميل مجاني لفروض واختبارات مصححة PDF لجميع الأطوار التعليمية والمواد الدراسية في الجزائر.">
+
+    <meta property="og:url" content="https://imadtbn.github.io/nadjah/">
+
+    <meta property="og:image" content="https://imadtbn.github.io/nadjah/assets/images/og-image.png">
+    <meta property="og:image:width" content="1200">
+    <meta property="og:image:height" content="630">
+    <meta property="og:image:alt" content="منصة النجاح التعليمية">
+
+    <!-- Twitter / X -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="منصة النجاح | فروض واختبارات مصححة PDF">
+    <meta name="twitter:description" content="نماذج فروض واختبارات مصححة لجميع الأطوار التعليمية في الجزائر بصيغة PDF.">
+    <meta name="twitter:image" content="https://success-platform.dz/assets/images/og-image.png">
+
+    <meta property="og:type" content="website">
+    <meta property="og:title" content="منصة النجاح | فروض واختبارات لجميع الأطوار التعليمية">
+    <meta property="og:description" content="تحميل فروض واختبارات مصححة PDF لجميع الأطوار التعليمية في الجزائر">
+    <meta property="og:image" content="https://imadtbn.github.io/nadjah/assets/images/cover.png">
+    <meta property="og:url" content="https://imadtbn.github.io/nadjah/">
+
+    <meta name="google-site-verification" content="f5Xi4oFx0v5dN6iPZd9qCw-7vnc3vIbAeYF9jr4vwVM" />
+
+    <!-- Preconnect -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@300;400;500;700;800;900&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
+    <script src="https://unpkg.com/lenis@1.1.13/dist/lenis.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+
+    <link rel="stylesheet" href="../../assets/css/style-main.css">
+    <link rel="stylesheet" href="../../assets/css/style-main2.css">
+    <link rel="stylesheet" href="../../assets/css/legal.css">
+
+</head>
+
+<body>
+
+    <!--زر الرجوع للأعلى-->
+    <button id="scrollTopBtn" class="scroll-top-btn" aria-label="العودة للأعلى">
+        <i class="fas fa-chevron-up"></i>
+    </button>
+
+    <!-- Custom Cursor -->
+    <div class="cursor" id="cursor"></div>
+    <div class="cursor-dot" id="cursorDot"></div>
+
+    <!-- Three.js Shader Background -->
+    <canvas id="shader-canvas"></canvas>
+
+    <!-- Header -->
+    <header class="header" id="header">
+        <div class="header-inner">
+            <a href="../../index.html" class="logo">
+                <img src="../../assets/images/icon22.png" alt="أيقونة منصة النجاح" class="logo-img" width="70" height="70" loading="eager">
+                <div class="logo-text">منصة <span>النجاح</span></div>
+            </a>
+            <div class="search-container">
+                <i class="fas fa-search search-icon"></i>
+                <input type="text" class="search-box" placeholder="ابحث عن نموذج، مادة، أو سنة دراسية...">
+            </div>
+            <nav class="nav-links">
+                <a href="../../index.html">الرئيسية</a>
+                <a href="../../pages/levels.html">الأطوار الدراسية</a>
+                <a href="../../pages/subjects.html">المواد التعليمية</a>
+                <a href="../../index.html#resources">النماذج</a>
+                <a href="contact.html">تواصل</a>
+            </nav>
+            <button class="mobile-toggle"><i class="fas fa-bars"></i></button>
+        </div>
+    </header>
+
+    <!-- Hero Section -->
+    <section class="hero">
+        <canvas id="starfield"></canvas>
+        <div class="hero-content">
+            <div class="hero-badge">منصة تعليمية شاملة</div>
+            <h1 class="hero-title">
+                <span class="highlight">المستويات التعليمية</span>
+            </h1>
+            <p class="hero-desc">
+                احصل على نماذج الفروض والاختبارات المصححة بصيغة PDF لجميع المواد الدراسية من الابتدائي إلى الثانوي
+            </p>
+            <div class="hero-stats">
+                <div class="stat-item">
+                    <span class="stat-number" data-count="500">0</span>
+                    <span class="stat-label">نموذج متاح</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-number" data-count="12">0</span>
+                    <span class="stat-label">سنة دراسية</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-number" data-count="20">0</span>
+                    <span class="stat-label">مادة دراسية</span>
+                </div>
+            </div>
+            <a href="#levels" class="hero-cta">
+                <span>استكشف المستويات التعليمية</span>
+                <i class="fas fa-arrow-down"></i>
+            </a>
+        </div>
+    </section>
+
+    <!-- Ad Slot 1 -->
+    <div class="ad-slot">
+        <span class="ad-label">إعلان</span>
+        <div class="ad-content">
+            <span>مساحة إعلانية - Google Ads (728x90)</span>
+        </div>
+    </div>
+
+    <!-- Education Levels -->
+    <section class="levels-section" id="levels">
+        <div class="section-header reveal">
+            <h2>المستويات التعليمية</h2>
+            <div class="section-line"></div>
+            <p>حدد السنة الدراسية للوصول إلى النماذج</p>
+        </div>
+
+        <div class="levels-grid">
+
+            <!-- Secondary -->
+            <div class="level-card reveal">
+                <div class="level-icon"><i class="fas fa-university"></i></div>
+                <h3>المستوى الثانوي</h3>
+                <span class="years-count">3 سنوات تعليمية</span>
+                <div class="years-grid">
+                    <a href="subjects/Scienc-exactes1.html" class="year-btn">الأولى</a>
+                    <a href="subjects/Scienc-exactes2.html" class="year-btn">الثانية</a>
+                    <a href="subjects/Scienc-exactes1.html" class="year-btn">الثالثة</a>
+                    <a href="subjects/Scienc-exactes1.html" class="year-btn">إمتحان البكالوريا</a>
+
+                </div>
+            </div>
+
+        </div>
+    </section>
+
+    <!-- Ad Banner -->
+    <div class="ad-banner">
+        مساحة إعلانية - Google Ads (Responsive)
+    </div>
+
+    <!-- دليل منصة النجاح -->
+    <section class="success-guide-section">
+        <!-- بطاقات تحفيزية -->
+        <div class="motivation-grid">
+            <div class="motivation-card">
+                <i class="fas fa-trophy"></i>
+                <h3>التفوق يبدأ بالتحضير</h3>
+                <p>المراجعة المنتظمة وحل النماذج السابقة من أفضل الطرق لتحقيق نتائج متميزة.</p>
+            </div>
+
+            <div class="motivation-card">
+                <i class="fas fa-book-reader"></i>
+                <h3>التعلم بالممارسة</h3>
+                <p>التدريب المستمر على الفروض والاختبارات يساعد على اكتساب الثقة وتحسين الأداء.</p>
+            </div>
+
+            <div class="motivation-card">
+                <i class="fas fa-graduation-cap"></i>
+                <h3>طريقك نحو النجاح</h3>
+                <p>استفد من النماذج المصححة لفهم منهجية الحل واكتساب مهارات جديدة.</p>
+            </div>
+
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer" id="contact">
+        <div class="footer-grid">
+            <!-- Brand -->
+            <div class="footer-brand">
+                <a href="../index.html" class="logo">
+                    <div class="logo-icon">
+                        <img src="../assets/images/icon22.png" alt="أيقونة منصة النجاح" class="footer-logo-img" width="70" height="70" loading="lazy">
+                    </div>
+                    <div class="logo-text">منصة <span>النجاح</span></div>
+                </a>
+                <p>منصة تعليمية شاملة تقدم نماذج الفروض والاختبارات المصححة لجميع الأطوار التعليمية. هدفنا مساعدة الطلاب على التحصيل الدراسي المتميز.</p>
+                <div class="footer-social">
+                    <a href="#" class="social-link"><i class="fab fa-facebook-f"></i></a>
+                    <a href="#" class="social-link"><i class="fab fa-twitter"></i></a>
+                    <a href="#" class="social-link"><i class="fab fa-instagram"></i></a>
+                    <a href="#" class="social-link"><i class="fab fa-youtube"></i></a>
+                    <a href="#" class="social-link"><i class="fab fa-telegram-plane"></i></a>
+                </div>
+            </div>
+
+            <!-- Quick Links -->
+            <div class="footer-section">
+                <h4>روابط سريعة</h4>
+                <ul class="footer-links">
+                    <li><a href="../index.html#starfield"><i class="fas fa-chevron-left"></i> الرئيسية</a></li>
+                    <li><a href="about.html"><i class="fas fa-chevron-left"></i> من نحن</a></li>
+                    <li><a href="guide.html"><i class="fas fa-chevron-left"></i>دليل المستخدم/a></li>
+                    <li><a href="contact.html"><i class="fas fa-chevron-left"></i> إتصل بنا</a></li>
+                    <li><a href="privacy.html"><i class="fas fa-chevron-left"></i> سياسة الخصوصية</a></li>
+                    <li><a href="terms.html"><i class="fas fa-chevron-left"></i> شروط الاستخدام</a></li>
+                    <li><a href="disclaimer.html"><i class="fas fa-chevron-left"></i> إخلاء المسؤولية</a></li>
+                    <li><a href="dmca.html"><i class="fas fa-chevron-left"></i> DMCA</a></li>
+                    <li><a href="https://imadtbn.github.io/dz_portal/"><i class="fas fa-chevron-left"></i> البوابة الجزائرية للخدمات الرقمية</a></li>
+                </ul>
+            </div>
+
+            <!-- Contact Info -->
+            <div class="footer-section">
+                <h4>معلومات التواصل</h4>
+                <div class="contact-item">
+                    <i class="fas fa-map-marker-alt"></i>
+                    <span>الجزائر العاصمة، الجزائر</span>
+                </div>
+                <div class="contact-item">
+                    <i class="fas fa-envelope"></i>
+                    <span>contact@manassat-taalem.dz</span>
+                </div>
+                <div class="contact-item">
+                    <i class="fas fa-phone"></i>
+                    <span>+213 555 123 456</span>
+                </div>
+                <div class="contact-item">
+                    <i class="fas fa-clock"></i>
+                    <span>متاح 24/7</span>
+                </div>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>جميع الحقوق محفوظة &copy; 2026 منصة النجاح</p>
+            <p>صنع بـ <i class="fas fa-heart heart"></i> للتعليم</p>
+        </div>
+    </footer>
+
+    <script defer src="../../assets/js/main.js"></script>
+
+</body>
+
+</html>
