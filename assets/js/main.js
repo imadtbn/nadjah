@@ -50,23 +50,44 @@ reveals.forEach(el => {
     });
 });
 
-// Stat counter animation
-const statNumbers = document.querySelectorAll('.stat-number');
-statNumbers.forEach(num => {
-    const target = parseInt(num.getAttribute('data-count'));
-    gsap.to(num, {
-        innerHTML: target,
-        duration: 2,
-        snap: {
-            innerHTML: 1
-        },
-        ease: 'power2.out',
-        scrollTrigger: {
-            trigger: num,
-            start: 'top 80%'
-        }
+// Dynamic statistics loaded from the generated data file.
+function getStatsUrl() {
+    const script = document.currentScript || [...document.scripts].find(item => /assets\/js\/main\.js$/.test(item.getAttribute('src') || '') || /\/assets\/js\/main\.js$/.test(item.src));
+    return script ? new URL('../data/site-stats.json', script.src).href : new URL('assets/data/site-stats.json', document.baseURI).href;
+}
+
+function animateStatistics(stats) {
+    const values = {
+        resources: stats.resources,
+        levels: stats.levels,
+        subjects: stats.subjects,
+        correctedResources: stats.correctedResources,
+        correctionRate: stats.correctionRate
+    };
+
+    document.querySelectorAll('[data-stat-key]').forEach(element => {
+        const target = Number(values[element.dataset.statKey]);
+        if (!Number.isFinite(target)) return;
+        gsap.to(element, {
+            innerHTML: target,
+            duration: 1.6,
+            snap: { innerHTML: 1 },
+            ease: 'power2.out',
+            scrollTrigger: {
+                trigger: element,
+                start: 'top 80%'
+            }
+        });
     });
-});
+}
+
+fetch(getStatsUrl())
+    .then(response => {
+        if (!response.ok) throw new Error(`Statistics request failed: ${response.status}`);
+        return response.json();
+    })
+    .then(animateStatistics)
+    .catch(error => console.warn('تعذر تحميل إحصائيات الموقع الديناميكية:', error));
 
 // ========== CUSTOM CURSOR ==========
 const cursor = document.getElementById('cursor');

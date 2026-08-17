@@ -47,6 +47,24 @@ reveals.forEach(el => {
     });
 });
 
+// Subject statistics are calculated from the document cards on this page.
+function updateSubjectStatistics() {
+    const cards = [...document.querySelectorAll('.doc-card')];
+    const corrected = cards.filter(card => card.querySelector('.solution-badge.with-solution')).length;
+    const values = {
+        resources: cards.length,
+        correctionRate: cards.length ? Math.round((corrected / cards.length) * 100) : 0
+    };
+
+    document.querySelectorAll('[data-subject-stat]').forEach(element => {
+        const value = values[element.dataset.subjectStat];
+        if (value === undefined) return;
+        element.textContent = value;
+    });
+}
+
+updateSubjectStatistics();
+
 // ========== CUSTOM CURSOR ==========
 const cursor = document.getElementById('cursor');
 const cursorDot = document.getElementById('cursorDot');

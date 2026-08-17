@@ -1,0 +1,19 @@
+{
+  "name": "منصة النجاح التعليمية",
+  "short_name": "النجاح",
+  "description": "فروض واختبارات مصححة PDF لجميع الأطوار التعليمية في الجزائر.",
+  "lang": "ar-DZ",
+  "dir": "rtl",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "theme_color": "#0f172a",
+  "background_color": "#0f172a",
+  "icons": [
+    {
+      "src": "assets/images/icon22.png",
+      "type": "image/png",
+      "sizes": "any"
+    }
+  ]
+}

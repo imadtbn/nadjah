@@ -1,0 +1,9 @@
+{
+  "resources": 420,
+  "correctedResources": 168,
+  "correctionRate": 40,
+  "levels": 12,
+  "subjects": 4,
+  "pages": 138,
+  "generatedFrom": "HTML .doc-card, .solution-badge.with-solution, .subject-badge and pages/levels.html"
+}
