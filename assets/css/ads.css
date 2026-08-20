@@ -1,0 +1,130 @@
+/* Unified Google AdSense presentation */
+
+.ad-slot,
+.ad-banner {
+    --ad-border: rgba(212, 175, 55, 0.16);
+    --ad-surface: rgba(15, 23, 42, 0.42);
+    position: relative;
+    isolation: isolate;
+    width: min(100% - 2rem, 1200px);
+    margin: clamp(2rem, 5vw, 4rem) auto;
+    padding: 1.25rem clamp(0.75rem, 2vw, 1.5rem);
+    min-height: 122px;
+    display: grid;
+    place-items: center;
+    overflow: hidden;
+    border: 1px solid var(--ad-border);
+    border-radius: 18px;
+    background: linear-gradient(135deg, var(--ad-surface), rgba(212, 175, 55, 0.025));
+    box-shadow: 0 14px 36px rgba(0, 0, 0, 0.12);
+    text-align: center;
+    transition: border-color 0.3s ease, box-shadow 0.3s ease, opacity 0.3s ease;
+}
+
+.ad-slot::before,
+.ad-banner::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    pointer-events: none;
+    background: radial-gradient(circle at 50% 0, rgba(212, 175, 55, 0.08), transparent 58%);
+}
+
+.ad-slot:hover,
+.ad-banner:hover {
+    border-color: rgba(212, 175, 55, 0.3);
+    box-shadow: 0 18px 42px rgba(0, 0, 0, 0.2);
+}
+
+.ad-label {
+    position: absolute;
+    top: 0;
+    right: 1.25rem;
+    transform: translateY(-50%);
+    z-index: 2;
+    padding: 0.25rem 0.75rem;
+    border: 1px solid var(--ad-border);
+    border-radius: 999px;
+    background: var(--void, #0a0a0f);
+    color: var(--gold, #d4af37);
+    font-size: 0.72rem;
+    font-weight: 700;
+    line-height: 1.2;
+}
+
+.ad-slot > .adsbygoogle,
+.ad-banner > .adsbygoogle {
+    display: block;
+    width: 100%;
+    min-width: 0;
+    min-height: 90px;
+}
+
+.ad-slot.ad-inArticle {
+    max-width: 860px;
+    margin-block: 2.5rem;
+    min-height: 164px;
+}
+
+.ad-slot.ad-autoRelaxed {
+    max-width: 1200px;
+    min-height: 130px;
+}
+
+.ad-banner {
+    min-height: 110px;
+    margin-block: 2rem;
+}
+
+.ad-failed,
+.ad-unavailable {
+    min-height: 0;
+    padding: 0;
+    margin-block: 1.25rem;
+    border-color: transparent;
+    background: transparent;
+    box-shadow: none;
+    opacity: 0;
+    pointer-events: none;
+}
+
+.ad-failed::before,
+.ad-unavailable::before,
+.ad-failed .ad-label,
+.ad-unavailable .ad-label {
+    display: none;
+}
+
+.ad-failed > .adsbygoogle,
+.ad-unavailable > .adsbygoogle {
+    min-height: 0;
+    height: 0;
+}
+
+@media (max-width: 768px) {
+    .ad-slot,
+    .ad-banner {
+        width: min(100% - 1rem, 720px);
+        margin-block: 1.75rem;
+        padding: 1rem 0.5rem;
+        min-height: 104px;
+        border-radius: 14px;
+    }
+
+    .ad-slot.ad-inArticle {
+        min-height: 150px;
+    }
+
+    .ad-label {
+        right: 0.75rem;
+        font-size: 0.68rem;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .ad-slot,
+    .ad-banner {
+        transition: none;
+    }
+}
