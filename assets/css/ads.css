@@ -1,0 +1,108 @@
+/*
+ * Unified ad presentation for Manassat Al-Najah.
+ * Ad units remain in HTML; site-tags.js only loads and initializes AdSense.
+ */
+
+.ad-slot,
+.ad-banner {
+    --ad-border: rgba(212, 175, 55, 0.16);
+    --ad-surface: rgba(15, 23, 42, 0.46);
+    position: relative;
+    isolation: isolate;
+    width: min(100% - 2rem, 1200px);
+    min-height: 122px;
+    margin: clamp(2rem, 5vw, 4rem) auto;
+    padding: 1rem clamp(0.75rem, 2vw, 1.5rem);
+    display: grid;
+    place-items: center;
+    overflow: hidden;
+    border: 1px solid var(--ad-border);
+    border-radius: 18px;
+    background: linear-gradient(135deg, var(--ad-surface), rgba(212, 175, 55, 0.025));
+    box-shadow: 0 14px 36px rgba(0, 0, 0, 0.12);
+    text-align: center;
+    transition: border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+.ad-slot::before,
+.ad-banner::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    pointer-events: none;
+    background: radial-gradient(circle at 50% 0, rgba(212, 175, 55, 0.08), transparent 58%);
+}
+
+.ad-slot:hover,
+.ad-banner:hover {
+    border-color: rgba(212, 175, 55, 0.3);
+    box-shadow: 0 18px 42px rgba(0, 0, 0, 0.2);
+}
+
+.ad-label {
+    position: absolute;
+    top: 0;
+    right: 1.25rem;
+    z-index: 2;
+    transform: translateY(-50%);
+    padding: 0.25rem 0.75rem;
+    border: 1px solid var(--ad-border);
+    border-radius: 999px;
+    background: var(--void, #0a0a0f);
+    color: var(--gold, #d4af37);
+    font-size: 0.72rem;
+    font-weight: 700;
+    line-height: 1.2;
+}
+
+.ad-slot > .adsbygoogle,
+.ad-banner > .adsbygoogle {
+    display: block;
+    width: 100%;
+    min-width: 0;
+    min-height: 90px;
+}
+
+.ad-slot--in-article {
+    max-width: 860px;
+    min-height: 164px;
+    margin-block: 2.5rem;
+}
+
+.ad-slot--autorelaxed {
+    max-width: 1200px;
+    min-height: 130px;
+}
+
+.ad-banner {
+    min-height: 110px;
+    margin-block: 2rem;
+}
+
+@media (max-width: 768px) {
+    .ad-slot,
+    .ad-banner {
+        width: min(100% - 1rem, 720px);
+        min-height: 104px;
+        margin-block: 1.75rem;
+        padding: 1rem 0.5rem;
+        border-radius: 14px;
+    }
+
+    .ad-slot--in-article {
+        min-height: 150px;
+    }
+
+    .ad-label {
+        right: 0.75rem;
+        font-size: 0.68rem;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .ad-slot,
+    .ad-banner {
+        transition: none;
+    }
+}
