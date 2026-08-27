@@ -6,13 +6,14 @@
 
   const config = Object.freeze({
     gtmId: 'GTM-5FW5WZZ4',
-    ga4MeasurementId: 'G-67JEETTJD7', // معرف GA4 موثق هنا؛ التشغيل الفعلي يتم عبر Google tag داخل GTM.
+    ga4MeasurementId: 'G-67JEETTJD7', // معرف GA4 المؤكد من المستخدم؛ يُحمّل مركزيًا عبر gtag.js.
     adsenseClient: 'ca-pub-5656416032906373',
     clarityId: 'xxxxxxxx', // ضع هنا معرف Microsoft Clarity إذا توفر.
   });
 
   const state = {
     gtm: false,
+    ga4: false,
     adsense: false,
     clarity: false,
   };
@@ -76,6 +77,29 @@
     loadScript(src).catch((error) => console.warn(error.message));
   };
 
+  const loadGa4 = () => {
+    if (!isConfigured(config.ga4MeasurementId) || state.ga4) return;
+
+    window.dataLayer = window.dataLayer || [];
+    window.gtag = window.gtag || function gtagQueue(...args) {
+      window.dataLayer.push(args);
+    };
+
+    const hasJsCommand = window.dataLayer.some((entry) => Array.isArray(entry) && entry[0] === 'js');
+    const hasConfigCommand = window.dataLayer.some((entry) => (
+      Array.isArray(entry) && entry[0] === 'config' && entry[1] === config.ga4MeasurementId
+    ));
+    if (!hasJsCommand) window.gtag('js', new Date());
+    if (!hasConfigCommand) window.gtag('config', config.ga4MeasurementId);
+
+    state.ga4 = true;
+    const src = `https://www.googletagmanager.com/gtag/js?id=${encodeURIComponent(config.ga4MeasurementId)}`;
+    loadScript(src).catch((error) => {
+      state.ga4 = false;
+      console.warn(error.message);
+    });
+  };
+
   const queueAds = () => {
     window.adsbygoogle = window.adsbygoogle || [];
     document.querySelectorAll('ins.adsbygoogle').forEach((unit) => {
@@ -120,6 +144,7 @@
   };
 
   loadGtm();
+  loadGa4();
 
   window.addEventListener('load', () => {
     runWhenIdle(loadAdsense, 4000);
