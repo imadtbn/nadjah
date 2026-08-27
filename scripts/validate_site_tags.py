@@ -7,7 +7,8 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 EXCLUDED = {'google4e08a8803a39e9f9.html'}
 EXPECTED_CLIENT = 'ca-pub-5656416032906373'
-EXPECTED_GTM = 'GTM-WM3MWG39'
+EXPECTED_GTM = 'GTM-5FW5WZZ4'
+EXPECTED_GA4 = 'G-67JEETTJD7'
 PLACEHOLDER = 'xxxxxxxx'
 
 
@@ -48,7 +49,7 @@ for page in pages:
         fail(f'{page}: direct Google Analytics code remains in HTML')
 
 loader = (ROOT / 'assets/js/site-tags.js').read_text(encoding='utf-8')
-for value in (EXPECTED_GTM, EXPECTED_CLIENT, PLACEHOLDER):
+for value in (EXPECTED_GTM, EXPECTED_GA4, EXPECTED_CLIENT, PLACEHOLDER):
     if value not in loader:
         fail(f'site-tags.js is missing expected identifier or placeholder: {value}')
 if 'isConfigured' not in loader or '!/^x+$/i.test(value)' not in loader:

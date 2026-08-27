@@ -5,8 +5,8 @@
   window.__siteTagsLoaded = true;
 
   const config = Object.freeze({
-    gtmId: 'GTM-WM3MWG39',
-    ga4MeasurementId: 'xxxxxxxx', // ضع هنا معرف Google Analytics 4 مثل G-XXXXXXXXXX إذا توفر.
+    gtmId: 'GTM-5FW5WZZ4',
+    ga4MeasurementId: 'G-67JEETTJD7', // معرف GA4 موثق هنا؛ التشغيل الفعلي يتم عبر Google tag داخل GTM.
     adsenseClient: 'ca-pub-5656416032906373',
     clarityId: 'xxxxxxxx', // ضع هنا معرف Microsoft Clarity إذا توفر.
   });
