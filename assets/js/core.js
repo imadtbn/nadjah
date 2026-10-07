@@ -5,6 +5,16 @@
 
     const currentScript = document.currentScript;
     const coreBaseUrl = currentScript?.src ? new URL('.', currentScript.src) : new URL('assets/js/', document.baseURI);
+    const siteRootUrl = new URL('../../', coreBaseUrl);
+
+    function ensureUxStyles() {
+        if (document.querySelector('link[data-nadjah-ux]')) return;
+        const link = document.createElement('link');
+        link.rel = 'stylesheet';
+        link.href = new URL('../css/ux.css', coreBaseUrl).href;
+        link.dataset.nadjahUx = 'true';
+        document.head.appendChild(link);
+    }
 
     const state = {
         initialized: false,
@@ -276,27 +286,187 @@
         });
     }
 
+    function normalizeArabic(value) {
+        return String(value || '')
+            .toLowerCase()
+            .normalize('NFKD')
+            .replace(/[\u064B-\u065F\u0670]/g, '')
+            .replace(/[إأآٱ]/g, 'ا')
+            .replace(/ى/g, 'ي')
+            .replace(/ؤ/g, 'و')
+            .replace(/ئ/g, 'ي')
+            .replace(/ة/g, 'ه')
+            .replace(/[^\p{L}\p{N}\s]/gu, ' ')
+            .replace(/\s+/g, ' ')
+            .trim();
+    }
+
+    function getResourceSearchText(item) {
+        return normalizeArabic([
+            item.title,
+            item.subject,
+            item.type,
+            item.cycleId,
+            item.semester ? `الفصل ${item.semester}` : '',
+            ...(item.breadcrumb || []),
+            ...(item.meta || [])
+        ].join(' '));
+    }
+
+    function typeLabel(type) {
+        return {
+            exam: 'اختبار',
+            homework: 'فرض',
+            exercise: 'تمرين',
+            revision: 'مراجعة'
+        }[type] || 'نموذج';
+    }
+
+    function resourceUrl(id) {
+        return new URL(`resources/${id}.html`, siteRootUrl).href;
+    }
+
+    function searchPageUrl(query) {
+        const url = new URL('pages/search.html', siteRootUrl);
+        if (query) url.searchParams.set('q', query);
+        return url.href;
+    }
+
     function initSearch() {
         const searchBox = safeQuery('.search-box');
         if (!searchBox) return;
 
-        searchBox.addEventListener('input', (event) => {
-            const query = event.target.value.trim().toLowerCase();
-            const docCards = document.querySelectorAll('.doc-card');
-            const visualCards = document.querySelectorAll('.subject-card, .resource-card, .level-card');
+        searchBox.setAttribute('autocomplete', 'off');
+        searchBox.setAttribute('role', 'combobox');
+        searchBox.setAttribute('aria-autocomplete', 'list');
+        searchBox.setAttribute('aria-expanded', 'false');
 
-            if (docCards.length) {
-                docCards.forEach((card) => {
-                    card.style.display = !query || card.textContent.toLowerCase().includes(query) ? 'flex' : 'none';
-                });
+        const container = searchBox.closest('.search-container') || searchBox.parentElement;
+        if (!container) return;
+        if (getComputedStyle(container).position === 'static') container.style.position = 'relative';
+
+        const results = document.createElement('div');
+        results.className = 'nadjah-search-results';
+        results.setAttribute('role', 'listbox');
+        results.id = 'nadjah-search-results';
+        searchBox.setAttribute('aria-controls', results.id);
+        container.appendChild(results);
+
+        let activeIndex = -1;
+        let currentItems = [];
+
+        const closeResults = () => {
+            results.classList.remove('active');
+            results.innerHTML = '';
+            searchBox.setAttribute('aria-expanded', 'false');
+            activeIndex = -1;
+            currentItems = [];
+        };
+
+        const openResults = () => {
+            results.classList.add('active');
+            searchBox.setAttribute('aria-expanded', 'true');
+        };
+
+        const render = (query) => {
+            const data = state.data?.resources?.resources || [];
+            const normalized = normalizeArabic(query);
+            if (!normalized) {
+                closeResults();
                 return;
             }
 
-            visualCards.forEach((card) => {
-                const match = !query || card.textContent.toLowerCase().includes(query);
-                card.style.opacity = match ? '1' : '0.3';
-                card.style.transform = match ? '' : 'scale(0.95)';
+            const tokens = normalized.split(' ').filter(Boolean);
+            const ranked = data
+                .map((item) => {
+                    const haystack = getResourceSearchText(item);
+                    if (!tokens.every((token) => haystack.includes(token))) return null;
+                    const title = normalizeArabic(item.title);
+                    let score = tokens.reduce((total, token) => total + (title.includes(token) ? 4 : 1), 0);
+                    if (item.corrected) score += .25;
+                    return { item, score };
+                })
+                .filter(Boolean)
+                .sort((a, b) => b.score - a.score)
+                .slice(0, 8);
+
+            currentItems = ranked.map((entry) => entry.item);
+            results.innerHTML = '';
+
+            if (!ranked.length) {
+                const empty = document.createElement('div');
+                empty.className = 'nadjah-search-empty';
+                empty.textContent = 'لا توجد نتائج مطابقة';
+                results.appendChild(empty);
+                openResults();
+                return;
+            }
+
+            ranked.forEach(({ item }, index) => {
+                const link = document.createElement('a');
+                link.className = 'nadjah-search-item';
+                link.href = resourceUrl(item.id);
+                link.setAttribute('role', 'option');
+                link.dataset.searchIndex = String(index);
+                link.innerHTML = `
+                    <div class="nadjah-search-title">${item.title}</div>
+                    <div class="nadjah-search-meta">
+                        <span>${item.subject || 'مادة تعليمية'}</span>
+                        <span>• ${typeLabel(item.type)}</span>
+                        ${item.semester ? `<span>• الفصل ${item.semester}</span>` : ''}
+                        ${item.corrected ? '<span>• مع التصحيح</span>' : ''}
+                    </div>
+                `;
+                results.appendChild(link);
             });
+
+            const all = document.createElement('a');
+            all.className = 'nadjah-search-all';
+            all.href = searchPageUrl(query);
+            all.textContent = 'عرض جميع النتائج';
+            results.appendChild(all);
+            openResults();
+        };
+
+        searchBox.addEventListener('input', (event) => render(event.target.value));
+
+        searchBox.addEventListener('keydown', (event) => {
+            if (event.key === 'Enter') {
+                if (activeIndex >= 0 && currentItems[activeIndex]) {
+                    event.preventDefault();
+                    window.location.href = resourceUrl(currentItems[activeIndex].id);
+                    return;
+                }
+                const query = searchBox.value.trim();
+                if (query) {
+                    event.preventDefault();
+                    window.location.href = searchPageUrl(query);
+                }
+                return;
+            }
+
+            if (!results.classList.contains('active') || !currentItems.length) return;
+            if (event.key === 'ArrowDown' || event.key === 'ArrowUp') {
+                event.preventDefault();
+                activeIndex += event.key === 'ArrowDown' ? 1 : -1;
+                if (activeIndex < 0) activeIndex = currentItems.length - 1;
+                if (activeIndex >= currentItems.length) activeIndex = 0;
+                results.querySelectorAll('.nadjah-search-item').forEach((item, index) => {
+                    item.toggleAttribute('data-active', index === activeIndex);
+                    if (index === activeIndex) item.focus();
+                });
+            } else if (event.key === 'Escape') {
+                closeResults();
+                searchBox.focus();
+            }
+        });
+
+        document.addEventListener('click', (event) => {
+            if (!container.contains(event.target)) closeResults();
+        });
+
+        state.dataReady?.then(() => {
+            if (searchBox.value.trim()) render(searchBox.value);
         });
     }
 
@@ -338,6 +508,7 @@
     function init() {
         if (state.initialized) return;
         state.initialized = true;
+        ensureUxStyles();
         state.dataReady = loadCentralData();
         initLoader();
         initLenisAndGsap();
@@ -360,6 +531,18 @@
         findResource(id) {
             return state.data?.resources?.resources?.find((item) => item.id === id) || null;
         },
+        searchResources(query) {
+            const normalized = normalizeArabic(query);
+            if (!normalized) return state.data?.resources?.resources || [];
+            const tokens = normalized.split(' ').filter(Boolean);
+            return (state.data?.resources?.resources || [])
+                .filter((item) => {
+                    const haystack = getResourceSearchText(item);
+                    return tokens.every((token) => haystack.includes(token));
+                });
+        },
+        resourceUrl,
+        searchPageUrl,
         findSubject(id) {
             return state.data?.subjects?.subjects?.find((item) => item.id === id) || null;
         },
