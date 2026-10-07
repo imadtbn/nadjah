@@ -24,7 +24,10 @@ function ensureNadjahCore() {
 ensureNadjahCore().then(() => {
     // تأثير Three.js خاص بالصفحات التي تحتوي على shader-canvas فقط.
     const shaderCanvas = document.getElementById('shader-canvas');
-    if (shaderCanvas && window.THREE) {
+    const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const mobileLike = window.matchMedia('(max-width: 768px), (pointer: coarse)').matches;
+
+    if (shaderCanvas && window.THREE && !reduceMotion && !mobileLike) {
         const scene = new THREE.Scene();
         const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
         const renderer = new THREE.WebGLRenderer({
@@ -77,7 +80,7 @@ ensureNadjahCore().then(() => {
             }
         `;
 
-        const geometry = new THREE.SphereGeometry(3, 48, 48);
+        const geometry = new THREE.SphereGeometry(3, 36, 36);
         const material = new THREE.ShaderMaterial({
             vertexShader,
             fragmentShader,
@@ -96,19 +99,19 @@ ensureNadjahCore().then(() => {
         camera.position.z = 5;
 
         let shaderTime = 0;
-        const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-
         const render = () => {
-            if (!reduceMotion) {
-                shaderTime += 0.01;
-                material.uniforms.uTime.value = shaderTime;
-                sphere.rotation.x += 0.002;
-                sphere.rotation.y += 0.003;
-            }
+            shaderTime += 0.01;
+            material.uniforms.uTime.value = shaderTime;
+            sphere.rotation.x += 0.002;
+            sphere.rotation.y += 0.003;
             renderer.render(scene, camera);
-            if (!reduceMotion) requestAnimationFrame(render);
+            if (!document.hidden) requestAnimationFrame(render);
         };
         render();
+
+        document.addEventListener('visibilitychange', () => {
+            if (!document.hidden) requestAnimationFrame(render);
+        });
 
         window.addEventListener('resize', () => {
             camera.aspect = window.innerWidth / window.innerHeight;
@@ -117,7 +120,7 @@ ensureNadjahCore().then(() => {
         }, { passive: true });
     }
 
-    if (window.gsap && document.querySelector('.hero-content') && document.querySelector('.hero')) {
+    if (window.gsap && !reduceMotion && !mobileLike && document.querySelector('.hero-content') && document.querySelector('.hero')) {
         gsap.to('.hero-content', {
             yPercent: 30,
             ease: 'none',
