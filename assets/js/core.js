@@ -540,6 +540,15 @@
         });
     }
 
+    function initUserFeatures() {
+        if (window.NadjahUser || document.querySelector('script[data-nadjah-user]')) return;
+        const script = document.createElement('script');
+        script.src = new URL('user-state.js', coreBaseUrl).href;
+        script.defer = true;
+        script.dataset.nadjahUser = 'true';
+        document.head.appendChild(script);
+    }
+
     function initPwa() {
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
@@ -591,6 +600,7 @@
         ensureUxStyles();
         state.dataReady = loadCentralData();
         initLoader();
+        initUserFeatures();
         initPwa();
         initLenisAndGsap();
         initStatistics();
