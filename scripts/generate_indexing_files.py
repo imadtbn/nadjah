@@ -19,6 +19,9 @@ def indexable_pages() -> list[Path]:
             continue
         content = path.read_bytes().decode("utf-8", errors="ignore")
         if "<head" in content.lower() and "<title" in content.lower():
+            lowered = content.lower()
+            if 'name="robots"' in lowered and "noindex" in lowered:
+                continue
             pages.append(path)
     return pages
 
