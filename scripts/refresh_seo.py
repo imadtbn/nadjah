@@ -96,7 +96,7 @@ def breadcrumbs(path: Path, title: str, canonical: str) -> list[dict[str, object
 
 
 def json_ld(path: Path, title: str, description: str, canonical: str) -> str:
-    deep = path.name.endswith("-more.html")
+    deep = path.name.endswith("-more.html") or path.parent == ROOT / "resources"
     graph: list[dict[str, object]] = [
         {"@type": "Organization", "@id": BASE_URL + "#organization", "name": BRAND, "url": BASE_URL, "logo": {"@type": "ImageObject", "url": BASE_URL + "assets/images/icon22.png"}, "sameAs": [BASE_URL]},
         {"@type": "WebSite", "@id": BASE_URL + "#website", "name": BRAND, "url": BASE_URL, "inLanguage": "ar-DZ", "publisher": {"@id": BASE_URL + "#organization"}},
