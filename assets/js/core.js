@@ -510,6 +510,28 @@
         const nav = safeQuery('.nav-links');
         if (!button || !nav) return;
 
+        const navItems = [
+            { label: 'الرئيسية', icon: 'fa-house', href: new URL('index.html', siteRootUrl).href },
+            { label: 'البحث', icon: 'fa-magnifying-glass', href: new URL('pages/search.html', siteRootUrl).href },
+            { label: 'الأطوار', icon: 'fa-layer-group', href: new URL('pages/levels.html', siteRootUrl).href },
+            { label: 'المواد', icon: 'fa-book-open', href: new URL('pages/subjects.html', siteRootUrl).href },
+            { label: 'الشعب', icon: 'fa-graduation-cap', href: new URL('pages/branch.html', siteRootUrl).href },
+            { label: 'مساحتي', icon: 'fa-bookmark', href: new URL('pages/my.html', siteRootUrl).href },
+            { label: 'تواصل', icon: 'fa-envelope', href: new URL('pages/contact.html', siteRootUrl).href }
+        ];
+
+        const currentUrl = new URL(window.location.href);
+        nav.innerHTML = navItems.map((item) => {
+            const target = new URL(item.href);
+            const active = currentUrl.pathname === target.pathname;
+            return `
+                <a href="${item.href}"${active ? ' class="active"' : ''}>
+                    <i class="fas ${item.icon}" aria-hidden="true"></i>
+                    <span>${item.label}</span>
+                </a>
+            `;
+        }).join('');
+
         button.setAttribute('aria-label', button.getAttribute('aria-label') || 'فتح القائمة');
         button.setAttribute('aria-expanded', 'false');
         nav.setAttribute('aria-hidden', 'true');
@@ -547,14 +569,15 @@
             link.addEventListener('click', close);
         });
 
-        let lastScrollY = window.scrollY;
+        let openedAtScrollY = window.scrollY;
         window.addEventListener('scroll', () => {
-            const currentY = window.scrollY;
-            if (nav.classList.contains('active') && Math.abs(currentY - lastScrollY) > 3) {
-                close();
-            }
-            lastScrollY = currentY;
+            if (!nav.classList.contains('active')) return;
+            if (Math.abs(window.scrollY - openedAtScrollY) >= 28) close();
         }, { passive: true });
+
+        button.addEventListener('click', () => {
+            if (nav.classList.contains('active')) openedAtScrollY = window.scrollY;
+        });
 
         window.addEventListener('resize', () => {
             if (window.innerWidth > 768) close();
@@ -567,7 +590,6 @@
             }
         });
     }
-
     function initScrollTop() {
         const button = document.getElementById('scrollTopBtn');
         if (!button) return;
