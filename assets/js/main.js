@@ -56,7 +56,7 @@ function getStatsUrl() {
     return script ? new URL('../data/site-stats.json', script.src).href : new URL('assets/data/site-stats.json', document.baseURI).href;
 }
 
-function animateStatistics(stats) {
+function applyStatistics(stats) {
     const values = {
         resources: stats.resources,
         levels: stats.levels,
@@ -68,25 +68,34 @@ function animateStatistics(stats) {
     document.querySelectorAll('[data-stat-key]').forEach(element => {
         const target = Number(values[element.dataset.statKey]);
         if (!Number.isFinite(target)) return;
-        gsap.to(element, {
-            innerHTML: target,
-            duration: 1.6,
-            snap: { innerHTML: 1 },
-            ease: 'power2.out',
-            scrollTrigger: {
-                trigger: element,
-                start: 'top 80%'
-            }
-        });
+
+        // اعرض القيمة الحقيقية فورًا لضمان عدم بقاء العداد على 0 عند
+        // فشل مكتبة الحركة أو تأخر ScrollTrigger.
+        element.textContent = String(target);
+
+        if (window.gsap && !window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+            const counter = { value: 0 };
+            gsap.to(counter, {
+                value: target,
+                duration: 1.2,
+                ease: 'power2.out',
+                onUpdate: () => {
+                    element.textContent = String(Math.round(counter.value));
+                },
+                onComplete: () => {
+                    element.textContent = String(target);
+                }
+            });
+        }
     });
 }
 
-fetch(getStatsUrl())
+fetch(getStatsUrl(), { cache: 'no-store' })
     .then(response => {
         if (!response.ok) throw new Error(`Statistics request failed: ${response.status}`);
         return response.json();
     })
-    .then(animateStatistics)
+    .then(applyStatistics)
     .catch(error => console.warn('تعذر تحميل إحصائيات الموقع الديناميكية:', error));
 
 // ========== CUSTOM CURSOR ==========
