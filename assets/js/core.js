@@ -8,8 +8,33 @@
 
     const state = {
         initialized: false,
-        lenis: null
+        lenis: null,
+        data: null
     };
+
+    function loadCentralData() {
+        const names = ['levels', 'subjects', 'branches', 'resources'];
+        const requests = names.map((name) => {
+            const url = new URL(`../data/${name}.json`, coreBaseUrl).href;
+            return fetch(url, { cache: 'no-store' }).then((response) => {
+                if (!response.ok) throw new Error(`${name}.json: ${response.status}`);
+                return response.json();
+            });
+        });
+
+        return Promise.all(requests)
+            .then(([levels, subjects, branches, resources]) => {
+                state.data = { levels, subjects, branches, resources };
+                document.dispatchEvent(new CustomEvent('nadjah:data-ready', {
+                    detail: state.data
+                }));
+                return state.data;
+            })
+            .catch((error) => {
+                console.warn('تعذر تحميل قاعدة بيانات منصة النجاح:', error);
+                return null;
+            });
+    }
 
     const safeQuery = (selector) => document.querySelector(selector);
 
@@ -313,6 +338,7 @@
     function init() {
         if (state.initialized) return;
         state.initialized = true;
+        state.dataReady = loadCentralData();
         initLoader();
         initLenisAndGsap();
         initStatistics();
@@ -328,7 +354,25 @@
         initialized: true,
         state,
         init,
-        get lenis() { return state.lenis; }
+        get lenis() { return state.lenis; },
+        get data() { return state.data; },
+        get dataReady() { return state.dataReady; },
+        findResource(id) {
+            return state.data?.resources?.resources?.find((item) => item.id === id) || null;
+        },
+        findSubject(id) {
+            return state.data?.subjects?.subjects?.find((item) => item.id === id) || null;
+        },
+        findBranch(id) {
+            return state.data?.branches?.branches?.find((item) => item.id === id) || null;
+        },
+        findLevel(id) {
+            for (const cycle of state.data?.levels?.cycles || []) {
+                const level = cycle.levels?.find((item) => item.id === id);
+                if (level) return level;
+            }
+            return null;
+        }
     };
 
     init();
