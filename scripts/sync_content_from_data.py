@@ -148,6 +148,22 @@ def sync_resource_ids(resources: dict) -> int:
                 download["href"] = item["downloadUrl"]
                 dirty = True
 
+            buttons = card.select_one(".doc-buttons")
+            if buttons and not buttons.select_one("a.resource-detail-link"):
+                depth = len(path.parent.relative_to(ROOT).parts)
+                prefix = "../" * depth
+                detail = soup.new_tag(
+                    "a",
+                    href=f"{prefix}resources/{item['id']}.html",
+                )
+                detail["class"] = ["doc-download-btn", "resource-detail-link"]
+                icon = soup.new_tag("i")
+                icon["class"] = ["fas", "fa-arrow-up-right-from-square"]
+                detail.append(icon)
+                detail.append(" صفحة النموذج")
+                buttons.append(detail)
+                dirty = True
+
         if dirty:
             save_soup(path, soup)
             changed += 1
