@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>البحث في النماذج | منصة النجاح</title>
+    <meta name="description" content="ابحث في نماذج الفروض والاختبارات والتمارين حسب المستوى والمادة والفصل والنوع.">
+    <meta name="robots" content="index, follow">
+    <link rel="canonical" href="https://imadtbn.github.io/nadjah/pages/search.html">
+    <link rel="icon" type="image/png" sizes="32x32" href="../assets/images/icon22.png">
+    <link rel="apple-touch-icon" href="../assets/images/icon22.png">
+    <link rel="manifest" href="../site.webmanifest">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="../assets/css/style-main.css">
+    <link rel="stylesheet" href="../assets/css/style-global.css">
+    <link rel="stylesheet" href="../assets/css/ux.css">
+</head>
+<body>
+    <button id="scrollTopBtn" class="scroll-top-btn" aria-label="العودة للأعلى">
+        <i class="fas fa-chevron-up"></i>
+    </button>
+
+    <div class="cursor" id="cursor"></div>
+    <div class="cursor-dot" id="cursorDot"></div>
+
+    <header class="header" id="header">
+        <div class="header-inner">
+            <a href="../index.html" class="logo">
+                <img src="../assets/images/icon22.png" alt="منصة النجاح" class="logo-img" width="70" height="70">
+                <div class="logo-text">منصة <span>النجاح</span></div>
+            </a>
+            <div class="search-container">
+                <i class="fas fa-search search-icon"></i>
+                <input id="globalSearch" type="search" class="search-box" placeholder="ابحث عن مادة، مستوى، فرض أو اختبار..." aria-label="البحث في النماذج">
+            </div>
+            <nav class="nav-links">
+                <a href="../index.html">الرئيسية</a>
+                <a href="levels.html">الأطوار</a>
+                <a href="subjects.html">المواد</a>
+                <a href="branch.html">الشعب</a>
+                <a href="contact.html">تواصل</a>
+            </nav>
+            <button class="mobile-toggle" aria-label="فتح القائمة"><i class="fas fa-bars"></i></button>
+        </div>
+    </header>
+
+    <main class="search-page">
+        <div class="search-shell">
+            <div class="search-page-head">
+                <h1>البحث في النماذج</h1>
+                <p>صفِّ النتائج حسب الطور والمادة ونوع المورد والفصل.</p>
+            </div>
+
+            <div class="search-toolbar" aria-label="فلاتر البحث">
+                <input id="searchQuery" type="search" placeholder="مثال: رياضيات الرابعة متوسط الفصل الثاني">
+                <select id="cycleFilter" aria-label="الطور">
+                    <option value="">كل الأطوار</option>
+                    <option value="primary">ابتدائي</option>
+                    <option value="middle">متوسط</option>
+                    <option value="secondary">ثانوي</option>
+                </select>
+                <select id="subjectFilter" aria-label="المادة">
+                    <option value="">كل المواد</option>
+                </select>
+                <select id="typeFilter" aria-label="نوع المورد">
+                    <option value="">كل الأنواع</option>
+                    <option value="homework">فروض</option>
+                    <option value="exam">اختبارات</option>
+                    <option value="exercise">تمارين</option>
+                    <option value="revision">مراجعة</option>
+                </select>
+                <select id="semesterFilter" aria-label="الفصل">
+                    <option value="">كل الفصول</option>
+                    <option value="1">الفصل الأول</option>
+                    <option value="2">الفصل الثاني</option>
+                    <option value="3">الفصل الثالث</option>
+                </select>
+            </div>
+
+            <div class="search-summary" id="searchSummary" aria-live="polite">جاري تحميل قاعدة النماذج...</div>
+            <section class="search-results-grid" id="searchResults" aria-label="نتائج البحث"></section>
+        </div>
+    </main>
+
+    <footer class="footer">
+        <div class="footer-bottom">
+            <p>جميع الحقوق محفوظة &copy; 2026 منصة النجاح</p>
+            <p><a href="levels.html" style="color:var(--gold);text-decoration:none">تصفح الأطوار التعليمية</a></p>
+        </div>
+    </footer>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
+    <script src="https://unpkg.com/lenis@1.1.13/dist/lenis.min.js"></script>
+    <script defer src="../assets/js/main.js"></script>
+    <script defer src="../assets/js/search-page.js"></script>
+</body>
+</html>
