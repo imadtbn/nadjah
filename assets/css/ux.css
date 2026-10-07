@@ -302,3 +302,60 @@
         height: 62vh;
     }
 }
+
+
+/* Performance and PWA */
+.nadjah-install-btn {
+    position: fixed;
+    right: 18px;
+    bottom: 18px;
+    z-index: 10020;
+    min-height: 46px;
+    display: inline-flex;
+    align-items: center;
+    gap: .5rem;
+    padding: .75rem 1rem;
+    border-radius: 999px;
+    border: 1px solid rgba(212,175,55,.35);
+    background: #0f172a;
+    color: #f5e6c8;
+    font: inherit;
+    font-weight: 700;
+    box-shadow: 0 14px 36px rgba(0,0,0,.32);
+    cursor: pointer;
+}
+.nadjah-install-btn i { color: #d4af37; }
+.nadjah-install-btn[hidden] { display: none !important; }
+
+@media (max-width: 768px) {
+    #shader-canvas { display: none !important; }
+    body { cursor: auto !important; }
+    .cursor, .cursor-dot { display: none !important; }
+    .nadjah-install-btn {
+        right: 12px;
+        bottom: 12px;
+        min-height: 44px;
+        padding: .65rem .9rem;
+        font-size: .9rem;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+        animation-duration: .001ms !important;
+        animation-iteration-count: 1 !important;
+        scroll-behavior: auto !important;
+        transition-duration: .001ms !important;
+    }
+}
+
+.levels-section,
+.subjects-section,
+.resources-section,
+.documents-section,
+.related-section,
+.success-guide-section,
+.footer {
+    content-visibility: auto;
+    contain-intrinsic-size: 1px 700px;
+}
