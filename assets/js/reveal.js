@@ -50,6 +50,52 @@ reveals.forEach(el => {
     });
 });
 
+// ========== GLOBAL SITE STATISTICS ==========
+function getRevealStatsUrl() {
+    const script = document.currentScript || [...document.scripts].find(item =>
+        /assets\/js\/reveal\.js(?:\?|$)/.test(item.getAttribute('src') || '') ||
+        /\/assets\/js\/reveal\.js(?:\?|$)/.test(item.src || '')
+    );
+    return script
+        ? new URL('../data/site-stats.json', script.src).href
+        : new URL('assets/data/site-stats.json', document.baseURI).href;
+}
+
+fetch(getRevealStatsUrl(), { cache: 'no-store' })
+    .then(response => {
+        if (!response.ok) throw new Error(`Statistics request failed: ${response.status}`);
+        return response.json();
+    })
+    .then(stats => {
+        const values = {
+            resources: stats.resources,
+            levels: stats.levels,
+            subjects: stats.subjects,
+            correctedResources: stats.correctedResources,
+            correctionRate: stats.correctionRate
+        };
+        document.querySelectorAll('[data-stat-key]').forEach(element => {
+            const value = Number(values[element.dataset.statKey]);
+            if (Number.isFinite(value)) element.textContent = String(value);
+        });
+    })
+    .catch(error => console.warn('تعذر تحميل إحصائيات الموقع الديناميكية:', error));
+
+// إحصائيات صفحة السنة تُستخرج من أعداد النماذج المعلنة في بطاقات المواد.
+document.querySelectorAll('[data-subject-stat="resources"]').forEach(element => {
+    const total = [...document.querySelectorAll('.subject-count')]
+        .reduce((sum, item) => {
+            const match = item.textContent.match(/\d+/);
+            return sum + (match ? Number(match[0]) : 0);
+        }, 0);
+    if (total > 0) {
+        const small = element.querySelector('small');
+        element.textContent = String(total) + ' ';
+        if (small) element.appendChild(small);
+        else element.insertAdjacentHTML('beforeend', '<small>نموذج</small>');
+    }
+});
+
 // ========== CUSTOM CURSOR ==========
 const cursor = document.getElementById('cursor');
 const cursorDot = document.getElementById('cursorDot');
@@ -195,7 +241,8 @@ function switchSemester(num) {
 }
 
 // ========== SEARCH ==========
-document.querySelector('.search-box').addEventListener('input', (e) => {
+const searchBox = document.querySelector('.search-box');
+if (searchBox) searchBox.addEventListener('input', (e) => {
     const query = e.target.value.toLowerCase();
     document.querySelectorAll('.subject-card').forEach(card => {
         const text = card.textContent.toLowerCase();
