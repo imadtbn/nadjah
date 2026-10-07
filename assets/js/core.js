@@ -512,17 +512,59 @@
 
         button.setAttribute('aria-label', button.getAttribute('aria-label') || 'فتح القائمة');
         button.setAttribute('aria-expanded', 'false');
+        nav.setAttribute('aria-hidden', 'true');
 
-        button.addEventListener('click', () => {
-            const open = nav.classList.toggle('active');
+        let backdrop = document.querySelector('.nadjah-nav-backdrop');
+        if (!backdrop) {
+            backdrop = document.createElement('div');
+            backdrop.className = 'nadjah-nav-backdrop';
+            document.body.appendChild(backdrop);
+        }
+
+        const setOpen = (open) => {
+            nav.classList.toggle('active', open);
+            backdrop.classList.toggle('active', open);
             button.setAttribute('aria-expanded', String(open));
+            nav.setAttribute('aria-hidden', String(!open));
+
+            const icon = button.querySelector('i');
+            if (icon) {
+                icon.classList.toggle('fa-bars', !open);
+                icon.classList.toggle('fa-xmark', open);
+            }
+        };
+
+        const close = () => setOpen(false);
+
+        button.addEventListener('click', (event) => {
+            event.stopPropagation();
+            setOpen(!nav.classList.contains('active'));
         });
 
+        backdrop.addEventListener('click', close);
+
         nav.querySelectorAll('a').forEach((link) => {
-            link.addEventListener('click', () => {
-                nav.classList.remove('active');
-                button.setAttribute('aria-expanded', 'false');
-            });
+            link.addEventListener('click', close);
+        });
+
+        let lastScrollY = window.scrollY;
+        window.addEventListener('scroll', () => {
+            const currentY = window.scrollY;
+            if (nav.classList.contains('active') && Math.abs(currentY - lastScrollY) > 3) {
+                close();
+            }
+            lastScrollY = currentY;
+        }, { passive: true });
+
+        window.addEventListener('resize', () => {
+            if (window.innerWidth > 768) close();
+        }, { passive: true });
+
+        document.addEventListener('keydown', (event) => {
+            if (event.key === 'Escape' && nav.classList.contains('active')) {
+                close();
+                button.focus();
+            }
         });
     }
 
