@@ -494,6 +494,17 @@
         });
     }
 
+    function initUserHubLink() {
+        document.querySelectorAll('.nav-links').forEach((nav) => {
+            if (nav.querySelector('a[href*="my.html"]')) return;
+            const link = document.createElement('a');
+            link.href = new URL('pages/my.html', siteRootUrl).href;
+            link.textContent = 'مساحتي';
+            link.className = 'user-hub-nav-link';
+            nav.appendChild(link);
+        });
+    }
+
     function initMobileMenu() {
         const button = safeQuery('.mobile-toggle');
         const nav = safeQuery('.nav-links');
@@ -587,6 +598,7 @@
         initStarfield();
         initSmoothAnchors();
         initSearch();
+        initUserHubLink();
         initMobileMenu();
         initScrollTop();
     }
