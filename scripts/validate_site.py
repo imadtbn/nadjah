@@ -109,7 +109,18 @@ def main() -> None:
         for line in sitemap.splitlines()
         if "<loc>" in line
     ]
-    assert len(locs) == len(set(locs)) == len(pages), (len(locs), len(pages))
+    indexable_pages = []
+    for path in pages:
+        soup = BeautifulSoup(path.read_text(encoding="utf-8", errors="ignore"), "html.parser")
+        robots_meta = soup.find("meta", attrs={"name": "robots"})
+        robots_value = (robots_meta.get("content", "") if robots_meta else "").lower()
+        if "noindex" not in robots_value:
+            indexable_pages.append(path)
+
+    assert len(locs) == len(set(locs)) == len(indexable_pages), (
+        len(locs),
+        len(indexable_pages),
+    )
     assert all(loc.startswith(BASE_URL) for loc in locs)
 
     robots = (ROOT / "robots.txt").read_text(encoding="utf-8")
@@ -118,6 +129,12 @@ def main() -> None:
 
     manifest = json.loads((ROOT / "site.webmanifest").read_text(encoding="utf-8"))
     assert manifest["lang"] == "ar-DZ" and manifest["dir"] == "rtl"
+    assert manifest.get("display") == "standalone"
+    assert len(manifest.get("shortcuts", [])) >= 3
+    assert (ROOT / "service-worker.js").exists()
+    assert (ROOT / "offline.html").exists()
+    sw = (ROOT / "service-worker.js").read_text(encoding="utf-8")
+    assert "offline.html" in sw and "APP_SHELL" in sw
 
     print(
         f"Validation passed: {len(pages)} pages, "
