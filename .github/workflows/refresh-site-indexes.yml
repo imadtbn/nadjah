@@ -35,6 +35,9 @@ jobs:
       - name: Synchronize pages from central JSON
         run: python scripts/sync_content_from_data.py
 
+      - name: Generate independent resource pages
+        run: python scripts/generate_resource_pages.py
+
       - name: Refresh statistics, SEO and indexing files
         run: |
           python scripts/generate_site_stats.py
@@ -50,6 +53,6 @@ jobs:
           fi
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add assets/data/*.json sitemap.xml robots.txt site.webmanifest '*.html' 'pages/*.html' 'levels/**/*.html'
+          git add assets/data/*.json sitemap.xml robots.txt site.webmanifest '*.html' 'pages/*.html' 'levels/**/*.html' 'resources/*.html'
           git commit -m "chore: sync pages from central content data [skip ci]"
           git push
