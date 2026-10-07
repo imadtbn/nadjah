@@ -7,13 +7,62 @@
   "start_url": "./",
   "scope": "./",
   "display": "standalone",
+  "display_override": [
+    "window-controls-overlay",
+    "standalone",
+    "minimal-ui"
+  ],
   "theme_color": "#0f172a",
   "background_color": "#0f172a",
+  "orientation": "portrait-primary",
+  "categories": [
+    "education",
+    "productivity"
+  ],
   "icons": [
     {
       "src": "assets/images/icon22.png",
       "type": "image/png",
-      "sizes": "any"
+      "sizes": "any",
+      "purpose": "any maskable"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "البحث في النماذج",
+      "short_name": "بحث",
+      "url": "pages/search.html",
+      "icons": [
+        {
+          "src": "assets/images/icon22.png",
+          "sizes": "any",
+          "type": "image/png"
+        }
+      ]
+    },
+    {
+      "name": "الأطوار التعليمية",
+      "short_name": "الأطوار",
+      "url": "pages/levels.html",
+      "icons": [
+        {
+          "src": "assets/images/icon22.png",
+          "sizes": "any",
+          "type": "image/png"
+        }
+      ]
+    },
+    {
+      "name": "المواد التعليمية",
+      "short_name": "المواد",
+      "url": "pages/subjects.html",
+      "icons": [
+        {
+          "src": "assets/images/icon22.png",
+          "sizes": "any",
+          "type": "image/png"
+        }
+      ]
     }
   ]
 }
