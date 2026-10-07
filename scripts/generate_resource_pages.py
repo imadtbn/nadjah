@@ -235,6 +235,7 @@ def render(resource: dict, resources: list[dict]) -> str:
                 <a href="../pages/levels.html">الأطوار</a>
                 <a href="../pages/subjects.html">المواد</a>
                 <a href="../pages/branch.html">الشعب</a>
+                <a href="../pages/my.html">مساحتي</a>
                 <a href="../pages/contact.html">تواصل</a>
             </nav>
             <button class="mobile-toggle" aria-label="فتح القائمة"><i class="fas fa-bars"></i></button>
@@ -274,6 +275,7 @@ def render(resource: dict, resources: list[dict]) -> str:
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
     <script src="https://unpkg.com/lenis@1.1.13/dist/lenis.min.js"></script>
     <script defer src="../assets/js/main.js"></script>
+    <script defer src="../assets/js/user-state.js"></script>
 </body>
 </html>
 """
