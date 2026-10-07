@@ -54,9 +54,34 @@ def write_manifest() -> None:
         "start_url": "./",
         "scope": "./",
         "display": "standalone",
+        "display_override": ["window-controls-overlay", "standalone", "minimal-ui"],
         "theme_color": "#0f172a",
         "background_color": "#0f172a",
-        "icons": [{"src": "assets/images/icon22.png", "type": "image/png", "sizes": "any"}],
+        "orientation": "portrait-primary",
+        "categories": ["education", "productivity"],
+        "icons": [
+            {"src": "assets/images/icon22.png", "type": "image/png", "sizes": "any", "purpose": "any maskable"}
+        ],
+        "shortcuts": [
+            {
+                "name": "البحث في النماذج",
+                "short_name": "بحث",
+                "url": "pages/search.html",
+                "icons": [{"src": "assets/images/icon22.png", "sizes": "any", "type": "image/png"}]
+            },
+            {
+                "name": "الأطوار التعليمية",
+                "short_name": "الأطوار",
+                "url": "pages/levels.html",
+                "icons": [{"src": "assets/images/icon22.png", "sizes": "any", "type": "image/png"}]
+            },
+            {
+                "name": "المواد التعليمية",
+                "short_name": "المواد",
+                "url": "pages/subjects.html",
+                "icons": [{"src": "assets/images/icon22.png", "sizes": "any", "type": "image/png"}]
+            }
+        ],
     }
     (ROOT / "site.webmanifest").write_text(json.dumps(manifest, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
 
