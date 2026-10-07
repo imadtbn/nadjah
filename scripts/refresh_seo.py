@@ -99,7 +99,7 @@ def json_ld(path: Path, title: str, description: str, canonical: str) -> str:
     deep = path.name.endswith("-more.html") or path.parent == ROOT / "resources"
     graph: list[dict[str, object]] = [
         {"@type": "Organization", "@id": BASE_URL + "#organization", "name": BRAND, "url": BASE_URL, "logo": {"@type": "ImageObject", "url": BASE_URL + "assets/images/icon22.png"}, "sameAs": [BASE_URL]},
-        {"@type": "WebSite", "@id": BASE_URL + "#website", "name": BRAND, "url": BASE_URL, "inLanguage": "ar-DZ", "publisher": {"@id": BASE_URL + "#organization"}},
+        {"@type": "WebSite", "@id": BASE_URL + "#website", "name": BRAND, "url": BASE_URL, "inLanguage": "ar-DZ", "publisher": {"@id": BASE_URL + "#organization"}, "potentialAction": {"@type": "SearchAction", "target": {"@type": "EntryPoint", "urlTemplate": BASE_URL + "pages/search.html?q={search_term_string}"}, "query-input": "required name=search_term_string"}},
         {"@type": ["WebPage", "LearningResource"] if deep else ["WebPage"], "@id": canonical + "#webpage", "url": canonical, "name": title, "description": description, "inLanguage": "ar-DZ", "isPartOf": {"@id": BASE_URL + "#website"}, "breadcrumb": {"@id": canonical + "#breadcrumb"}},
         {"@type": "BreadcrumbList", "@id": canonical + "#breadcrumb", "itemListElement": breadcrumbs(path, title, canonical)},
     ]
