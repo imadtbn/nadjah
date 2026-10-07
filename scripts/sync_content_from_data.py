@@ -25,6 +25,35 @@ def save_soup(path: Path, soup: BeautifulSoup) -> None:
     path.write_text(str(soup), encoding="utf-8")
 
 
+def enrich_resources(resources: dict, branches: dict) -> None:
+    branch_names = {clean(item.get("name", "")) for item in branches.get("branches", [])}
+
+    for item in resources.get("resources", []):
+        trail = [clean(value) for value in item.get("breadcrumb", []) if clean(value)]
+
+        branch = next((value for value in trail if value in branch_names), None)
+        if branch:
+            item["branch"] = branch
+
+        level = next(
+            (
+                value for value in trail
+                if value.startswith("السنة ")
+                or "تحضيري" in value
+                or "بكالوريا" in value
+                or "المتوسط" in value
+            ),
+            None,
+        )
+        if level:
+            item["levelLabel"] = level
+
+    (DATA_DIR / "resources.json").write_text(
+        json.dumps(resources, ensure_ascii=False, indent=2) + "\n",
+        encoding="utf-8",
+    )
+
+
 def sync_level_ids(levels: dict) -> int:
     mapping = {}
     for cycle in levels.get("cycles", []):
@@ -246,6 +275,8 @@ def main() -> None:
     branches = load_json("branches.json")
     subjects = load_json("subjects.json")
     resources = load_json("resources.json")
+
+    enrich_resources(resources, branches)
 
     results = {
         "levelPages": sync_level_ids(levels),
