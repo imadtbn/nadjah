@@ -115,7 +115,7 @@ def metadata_html(path: Path, title: str, description: str, canonical: str) -> s
     manifest = asset_prefix + "site.webmanifest"
     sitemap = asset_prefix + "sitemap.xml"
     og_type = "article" if path.name.endswith("-more.html") or path.parent == ROOT / "resources" else "website"
-    noindex = path.name == "offline.html" or (path.parent == ROOT / "pages" and path.name == "search.html")
+    noindex = path.name == "offline.html" or (path.parent == ROOT / "pages" and path.name in {"search.html", "my.html"})
     robots = "noindex, follow" if noindex else "index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1"
     return f'''    <title>{title}</title>
     <meta name="description" content="{description}">
