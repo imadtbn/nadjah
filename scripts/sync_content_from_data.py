@@ -29,7 +29,7 @@ def sync_level_ids(levels: dict) -> int:
     mapping = {}
     for cycle in levels.get("cycles", []):
         for level in cycle.get("levels", []):
-            mapping[level.get("href")] = level
+            mapping[(level.get("href"), clean(level.get("name", "")))] = level
 
     changed = 0
     for path in sorted(ROOT.rglob("*.html")):
@@ -43,7 +43,8 @@ def sync_level_ids(levels: dict) -> int:
                 target = (path.parent / href).resolve().relative_to(ROOT).as_posix()
             except ValueError:
                 continue
-            level = mapping.get(target)
+            label = clean(link.get_text(" ", strip=True))
+            level = mapping.get((target, label))
             if level and link.get("data-level-id") != level["id"]:
                 link["data-level-id"] = level["id"]
                 link["data-cycle-id"] = level["cycleId"]
