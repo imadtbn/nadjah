@@ -23,6 +23,20 @@ def optimize(path: Path) -> bool:
     soup = BeautifulSoup(raw, "html.parser")
     dirty = False
 
+    depth = len(path.relative_to(ROOT).parent.parts)
+    prefix = "../" * depth
+
+    if soup.head and not soup.find("link", href=lambda value: value and value.rstrip().endswith("assets/css/ux.css")):
+        link = soup.new_tag("link", rel="stylesheet", href=prefix + "assets/css/ux.css")
+        soup.head.append(link)
+        dirty = True
+
+    if soup.body and not soup.find("script", src=lambda value: value and value.rstrip().endswith("assets/js/core.js")):
+        script = soup.new_tag("script", src=prefix + "assets/js/core.js")
+        script["defer"] = ""
+        soup.body.append(script)
+        dirty = True
+
     has_shader = soup.select_one("#shader-canvas") is not None
 
     for script in list(soup.find_all("script", src=True)):
