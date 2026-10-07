@@ -1,10 +1,12 @@
-name: Refresh site indexes and statistics
+name: Refresh site indexes and central content
 
 on:
   push:
     branches: [main]
     paths:
       - '**/*.html'
+      - 'assets/data/*.json'
+      - 'assets/js/*.js'
       - 'scripts/*.py'
       - '.github/workflows/refresh-site-indexes.yml'
   workflow_dispatch:
@@ -27,12 +29,18 @@ jobs:
       - name: Install HTML parser
         run: python -m pip install beautifulsoup4
 
-      - name: Refresh SEO, statistics and indexing files
+      - name: Ensure central content data exists
+        run: python scripts/migrate_content_data.py
+
+      - name: Synchronize pages from central JSON
+        run: python scripts/sync_content_from_data.py
+
+      - name: Refresh statistics, SEO and indexing files
         run: |
-          python scripts/update_stat_markup.py
           python scripts/generate_site_stats.py
           python scripts/refresh_seo.py
           python scripts/generate_indexing_files.py
+          python scripts/validate_site.py
 
       - name: Commit generated changes when needed
         run: |
@@ -42,6 +50,6 @@ jobs:
           fi
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add assets/data/site-stats.json sitemap.xml robots.txt site.webmanifest '*.html'
-          git commit -m "chore: refresh site indexes and statistics [skip ci]"
+          git add assets/data/*.json sitemap.xml robots.txt site.webmanifest '*.html' 'pages/*.html' 'levels/**/*.html'
+          git commit -m "chore: sync pages from central content data [skip ci]"
           git push
