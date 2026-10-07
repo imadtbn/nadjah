@@ -1,6 +1,8 @@
 (() => {
   'use strict';
 
+  if (window.NadjahUser) return;
+
   const KEY = 'nadjah:user:v1';
   const MAX_RECENT = 30;
 
@@ -133,8 +135,43 @@
     }
   }
 
+  function enhanceLegacyCards() {
+    document.querySelectorAll('.doc-card[data-resource-id]').forEach((card) => {
+      const id = card.dataset.resourceId;
+      const buttons = card.querySelector('.doc-buttons, .doc-actions');
+      if (!id || !buttons) return;
+
+      card.querySelectorAll('a.doc-download-btn[href]').forEach((link) => {
+        if (link.classList.contains('resource-detail-link')) return;
+        link.addEventListener('click', () => trackDownload(id), { once: true });
+      });
+
+      if (!buttons.querySelector('.quick-favorite-action')) {
+        const favorite = document.createElement('button');
+        favorite.type = 'button';
+        favorite.className = 'doc-download-btn quick-favorite-action';
+        const refresh = () => {
+          const active = isFavorite(id);
+          favorite.classList.toggle('active', active);
+          favorite.innerHTML = active
+            ? '<i class="fas fa-heart"></i><span>محفوظ</span>'
+            : '<i class="far fa-heart"></i><span>مفضلة</span>';
+          favorite.setAttribute('aria-pressed', String(active));
+        };
+        refresh();
+        favorite.addEventListener('click', () => {
+          toggleFavorite(id);
+          refresh();
+        });
+        buttons.appendChild(favorite);
+      }
+    });
+  }
+
   function initResourcePage() {
-    const main = document.querySelector('[data-resource-id]');
+    enhanceLegacyCards();
+
+    const main = document.querySelector('main[data-resource-id]');
     if (!main) return;
     const id = main.dataset.resourceId;
     touchRecent(id);
