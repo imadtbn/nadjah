@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>مساحتي | منصة النجاح</title>
+<meta name="description" content="مساحة الطالب في منصة النجاح: المفضلة، آخر مشاهدة، الأكثر استخدامًا، والتوصيات الشخصية المحفوظة محليًا على الجهاز.">
+<meta name="robots" content="noindex, follow">
+<link rel="canonical" href="https://imadtbn.github.io/nadjah/pages/my.html">
+<link rel="manifest" href="../site.webmanifest">
+<link rel="icon" href="../assets/images/icon22.png">
+<link rel="apple-touch-icon" href="../assets/images/icon22.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<link rel="stylesheet" href="../assets/css/style-main.css">
+<link rel="stylesheet" href="../assets/css/style-global.css">
+<link rel="stylesheet" href="../assets/css/ux.css">
+</head>
+<body>
+<button id="scrollTopBtn" class="scroll-top-btn" aria-label="العودة للأعلى"><i class="fas fa-chevron-up"></i></button>
+<div class="cursor" id="cursor"></div>
+<div class="cursor-dot" id="cursorDot"></div>
+
+<header class="header" id="header">
+  <div class="header-inner">
+    <a href="../index.html" class="logo">
+      <img src="../assets/images/icon22.png" alt="منصة النجاح" class="logo-img" width="70" height="70">
+      <div class="logo-text">منصة <span>النجاح</span></div>
+    </a>
+    <div class="search-container">
+      <i class="fas fa-search search-icon"></i>
+      <input type="search" class="search-box" placeholder="ابحث عن نموذج، مادة أو مستوى..." aria-label="البحث">
+    </div>
+    <nav class="nav-links">
+      <a href="../index.html">الرئيسية</a>
+      <a href="search.html">البحث</a>
+      <a href="levels.html">الأطوار</a>
+      <a href="subjects.html">المواد</a>
+      <a class="active" href="my.html">مساحتي</a>
+    </nav>
+    <button class="mobile-toggle" aria-label="فتح القائمة"><i class="fas fa-bars"></i></button>
+  </div>
+</header>
+
+<main class="user-hub">
+  <section class="user-hub-hero">
+    <div>
+      <span class="user-hub-kicker">بياناتك محفوظة على جهازك فقط</span>
+      <h1>مساحتي التعليمية</h1>
+      <p>تابع المفضلة وآخر ما شاهدته، وحدد تفضيلاتك للحصول على اقتراحات أقرب لاحتياجاتك.</p>
+    </div>
+  </section>
+
+  <section class="user-preferences-card">
+    <div class="user-section-head">
+      <div>
+        <h2>تفضيلات الطالب</h2>
+        <p>تُستخدم محليًا لترتيب الاقتراحات فقط.</p>
+      </div>
+      <button id="clearUserData" class="user-secondary-btn" type="button"><i class="fas fa-trash"></i> مسح بياناتي المحلية</button>
+    </div>
+    <div class="user-preferences-grid">
+      <select id="prefCycle" aria-label="الطور"><option value="">كل الأطوار</option><option value="primary">ابتدائي</option><option value="middle">متوسط</option><option value="secondary">ثانوي</option></select>
+      <select id="prefLevel" aria-label="المستوى"><option value="">كل المستويات</option></select>
+      <select id="prefSubject" aria-label="المادة"><option value="">كل المواد</option></select>
+      <select id="prefSemester" aria-label="الفصل"><option value="">كل الفصول</option><option value="1">الفصل الأول</option><option value="2">الفصل الثاني</option><option value="3">الفصل الثالث</option></select>
+    </div>
+  </section>
+
+  <section class="user-section">
+    <div class="user-section-head"><h2>المفضلة</h2><span id="favoritesCount" class="user-count"></span></div>
+    <div id="favoritesGrid" class="user-resource-grid"></div>
+  </section>
+
+  <section class="user-section">
+    <div class="user-section-head"><h2>آخر ما شاهدته</h2><span id="recentCount" class="user-count"></span></div>
+    <div id="recentGrid" class="user-resource-grid"></div>
+  </section>
+
+  <section class="user-section">
+    <div class="user-section-head"><h2>الأكثر زيارة على جهازك</h2></div>
+    <div id="viewsGrid" class="user-resource-grid"></div>
+  </section>
+
+  <section class="user-section">
+    <div class="user-section-head"><h2>الأكثر تحميلًا على جهازك</h2></div>
+    <div id="downloadsGrid" class="user-resource-grid"></div>
+  </section>
+
+  <section class="user-section">
+    <div class="user-section-head"><h2>مقترح لك</h2><span class="user-count">حسب استخدامك وتفضيلاتك</span></div>
+    <div id="recommendationsGrid" class="user-resource-grid"></div>
+  </section>
+</main>
+
+<footer class="footer">
+  <div class="footer-bottom">
+    <p>جميع الحقوق محفوظة © 2026 منصة النجاح</p>
+    <p>التفضيلات والمفضلة محفوظة محليًا على هذا الجهاز.</p>
+  </div>
+</footer>
+
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
+<script defer src="https://unpkg.com/lenis@1.1.13/dist/lenis.min.js"></script>
+<script defer src="../assets/js/main.js"></script>
+<script defer src="../assets/js/user-state.js"></script>
+<script defer src="../assets/js/my-page.js"></script>
+</body>
+</html>
