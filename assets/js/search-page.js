@@ -28,6 +28,7 @@
 
     const q = document.getElementById('searchQuery');
     const cycle = document.getElementById('cycleFilter');
+    const level = document.getElementById('levelFilter');
     const subject = document.getElementById('subjectFilter');
     const type = document.getElementById('typeFilter');
     const semester = document.getElementById('semesterFilter');
@@ -89,6 +90,7 @@
         let items = window.NadjahCore.searchResources(query);
 
         if (cycle.value) items = items.filter((item) => item.cycleId === cycle.value);
+        if (level.value) items = items.filter((item) => item.levelLabel === level.value);
         if (subject.value) items = items.filter((item) => item.subject === subject.value);
         if (type.value) items = items.filter((item) => item.type === type.value);
         if (semester.value) items = items.filter((item) => String(item.semester || '') === semester.value);
@@ -100,6 +102,7 @@
         const url = new URL(window.location.href);
         q.value.trim() ? url.searchParams.set('q', q.value.trim()) : url.searchParams.delete('q');
         cycle.value ? url.searchParams.set('cycle', cycle.value) : url.searchParams.delete('cycle');
+        level.value ? url.searchParams.set('level', level.value) : url.searchParams.delete('level');
         subject.value ? url.searchParams.set('subject', subject.value) : url.searchParams.delete('subject');
         type.value ? url.searchParams.set('type', type.value) : url.searchParams.delete('type');
         semester.value ? url.searchParams.set('semester', semester.value) : url.searchParams.delete('semester');
@@ -117,7 +120,17 @@
             return;
         }
 
-        const subjects = [...new Set((data.resources.resources || []).map((item) => item.subject).filter(Boolean))]
+        const allResources = data.resources.resources || [];
+        const levels = [...new Set(allResources.map((item) => item.levelLabel).filter(Boolean))]
+            .sort((a, b) => a.localeCompare(b, 'ar'));
+        levels.forEach((name) => {
+            const option = document.createElement('option');
+            option.value = name;
+            option.textContent = name;
+            level.appendChild(option);
+        });
+
+        const subjects = [...new Set(allResources.map((item) => item.subject).filter(Boolean))]
             .sort((a, b) => a.localeCompare(b, 'ar'));
         subjects.forEach((name) => {
             const option = document.createElement('option');
@@ -129,11 +142,12 @@
         const params = new URLSearchParams(window.location.search);
         q.value = params.get('q') || '';
         cycle.value = params.get('cycle') || '';
+        level.value = params.get('level') || '';
         subject.value = params.get('subject') || '';
         type.value = params.get('type') || '';
         semester.value = params.get('semester') || '';
 
-        [q, cycle, subject, type, semester].forEach((control) => {
+        [q, cycle, level, subject, type, semester].forEach((control) => {
             control.addEventListener(control.tagName === 'INPUT' ? 'input' : 'change', handleChange);
         });
 
