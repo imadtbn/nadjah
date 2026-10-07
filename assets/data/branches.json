@@ -1,0 +1,40 @@
+{
+  "schemaVersion": 1,
+  "branches": [
+    {
+      "id": "branch-8e2e83ac4b",
+      "name": "علوم تجريبية",
+      "href": "levels/branch/sc-experimentales.html"
+    },
+    {
+      "id": "branch-820e6ee23d",
+      "name": "رياضيات",
+      "href": "levels/branch/Mathematiques.html"
+    },
+    {
+      "id": "branch-0f835bd968",
+      "name": "تقني رياضي",
+      "href": "levels/branch/tech-Mathematiques.html"
+    },
+    {
+      "id": "branch-1a84a67097",
+      "name": "تسيير وإقتصاد",
+      "href": "levels/branch/gest-econ.html"
+    },
+    {
+      "id": "branch-109d991112",
+      "name": "علوم وتكنولوجيا",
+      "href": "levels/branch/Sc-technologies.html"
+    },
+    {
+      "id": "branch-ba4efc53a8",
+      "name": "أدب عربي وفلسفة",
+      "href": "levels/branch/Littérature-philosophie.html"
+    },
+    {
+      "id": "branch-d1c729fc8a",
+      "name": "لغات أجنبية",
+      "href": "levels/branch/Lang-etrang.html"
+    }
+  ]
+}

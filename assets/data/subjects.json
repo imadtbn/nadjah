@@ -1,0 +1,207 @@
+{
+  "schemaVersion": 1,
+  "subjects": [
+    {
+      "id": "subject-5285bdbc9e",
+      "name": "إعلام آلي",
+      "description": "فروض واختبارات شاملة",
+      "icon": "fas fa-laptop",
+      "destinations": [
+        "pages/levels.html"
+      ]
+    },
+    {
+      "id": "subject-4f25b41bf6",
+      "name": "التاريخ والجغرافيا",
+      "description": "فروض واختبارات شاملة",
+      "icon": "fas fa-map-marked-alt",
+      "destinations": [
+        "pages/levels.html"
+      ]
+    },
+    {
+      "id": "subject-94425b17db",
+      "name": "التربية الإسلامية",
+      "description": "نماذج في التربية والتعليمات",
+      "icon": "fas fa-quran",
+      "destinations": [
+        "pages/levels.html",
+        "levels/branch/subjects/modul-secondary01/islamic-secondary01.html",
+        "levels/middle/modul-middle01/islamic-middle01.html",
+        "levels/middle/modul-middle02/islamic-middle02.html",
+        "levels/middle/modul-middle03/islamic-middle03.html",
+        "levels/middle/modul-middle04/islamic-middle04.html",
+        "levels/primary/modul-preparation/islamic-preparation.html",
+        "levels/primary/modul-primry01/islamic-primry01.html",
+        "levels/primary/modul-primry02/islamic-primry02.html",
+        "levels/primary/modul-primry03/islamic-primry03.html",
+        "levels/primary/modul-primry04/islamic-primry04.html",
+        "levels/primary/modul-primry05/islamic-primry05.html"
+      ]
+    },
+    {
+      "id": "subject-3e8624f32e",
+      "name": "التربية البدنية",
+      "description": "تمارين، ألعاب رياضية",
+      "icon": "fas fa-running",
+      "destinations": [
+        "levels/branch/subjects/modul-secondary01/sport-secondary01.html",
+        "levels/middle/modul-middle01/sport-middle01.html",
+        "levels/middle/modul-middle02/sport-middle02.html",
+        "levels/middle/modul-middle03/sport-middle03.html",
+        "levels/middle/modul-middle04/sport-middle04.html",
+        "levels/primary/modul-preparation/sport-preparation.html",
+        "levels/primary/modul-primry01/sport-primry01.html",
+        "levels/primary/modul-primry02/sport-primry02.html",
+        "levels/primary/modul-primry03/sport-primry03.html",
+        "levels/primary/modul-primry04/sport-primry04.html",
+        "levels/primary/modul-primry05/sport-primry05.html"
+      ]
+    },
+    {
+      "id": "subject-7e9bc3a46a",
+      "name": "التربية الفنية",
+      "description": "رسم، تشكيل، ألوان",
+      "icon": "fas fa-palette",
+      "destinations": [
+        "levels/branch/subjects/modul-secondary01/art-secondary01.html",
+        "levels/middle/modul-middle01/art-middle01.html",
+        "levels/middle/modul-middle02/art-middle02.html",
+        "levels/middle/modul-middle03/art-middle03.html",
+        "levels/middle/modul-middle04/art-middle04.html",
+        "levels/primary/modul-preparation/art-preparation.html",
+        "levels/primary/modul-primry01/art-primry01.html",
+        "levels/primary/modul-primry02/art-primry02.html",
+        "levels/primary/modul-primry03/art-primry03.html",
+        "levels/primary/modul-primry04/art-primry04.html",
+        "levels/primary/modul-primry05/art-primry05.html"
+      ]
+    },
+    {
+      "id": "subject-d390abb9df",
+      "name": "التربية المدنية",
+      "description": "تاريخ، جغرافيا، مواطنة",
+      "icon": "fas fa-landmark",
+      "destinations": [
+        "levels/branch/subjects/modul-secondary01/history-secondary01.html",
+        "levels/middle/modul-middle01/history-middle01.html",
+        "levels/middle/modul-middle02/history-middle02.html",
+        "levels/middle/modul-middle03/history-middle03.html",
+        "levels/middle/modul-middle04/history-middle04.html",
+        "levels/primary/modul-preparation/history-preparation.html",
+        "levels/primary/modul-primry01/history-primry01.html",
+        "levels/primary/modul-primry02/history-primry02.html",
+        "levels/primary/modul-primry03/history-primry03.html",
+        "levels/primary/modul-primry04/history-primry04.html",
+        "levels/primary/modul-primry05/history-primry05.html"
+      ]
+    },
+    {
+      "id": "subject-825de89502",
+      "name": "الرياضيات",
+      "description": "تمارين وحلول مفصلة",
+      "icon": "fas fa-square-root-alt",
+      "destinations": [
+        "pages/levels.html",
+        "levels/branch/subjects/modul-Scienc-exactes1/math-sc-experimentales01.html",
+        "levels/middle/modul-middle01/math-middle01.html",
+        "levels/middle/modul-middle02/math-middle02.html",
+        "levels/middle/modul-middle03/math-middle03.html",
+        "levels/middle/modul-middle04/math-middle04.html",
+        "levels/primary/modul-preparation/math-preparation.html",
+        "levels/primary/modul-primry01/math-primry01.html",
+        "levels/primary/modul-primry02/math-primry02.html",
+        "levels/primary/modul-primry03/math-primry03.html",
+        "levels/primary/modul-primry04/math-primry04.html",
+        "levels/primary/modul-primry05/math-primry05.html"
+      ]
+    },
+    {
+      "id": "subject-0be532c433",
+      "name": "العلوم الطبيعية",
+      "description": "فروض واختبارات مع التصحيح",
+      "icon": "fas fa-flask",
+      "destinations": [
+        "pages/levels.html",
+        "levels/branch/subjects/modul-secondary01/science-secondary01.html",
+        "levels/middle/modul-middle01/science-middle01.html",
+        "levels/middle/modul-middle02/science-middle02.html",
+        "levels/middle/modul-middle03/science-middle03.html",
+        "levels/middle/modul-middle04/science-middle04.html",
+        "levels/primary/modul-preparation/science-preparation.html",
+        "levels/primary/modul-primry01/science-primry01.html",
+        "levels/primary/modul-primry02/science-primry02.html",
+        "levels/primary/modul-primry03/science-primry03.html",
+        "levels/primary/modul-primry04/science-primry04.html",
+        "levels/primary/modul-primry05/science-primry05.html"
+      ]
+    },
+    {
+      "id": "subject-f2650425cd",
+      "name": "الفيزياء والكيمياء",
+      "description": "نماذج للطور الثانوي",
+      "icon": "fas fa-atom",
+      "destinations": [
+        "pages/levels.html"
+      ]
+    },
+    {
+      "id": "subject-fb090c279a",
+      "name": "اللغة الإنجليزية",
+      "description": "English - نماذج شاملة",
+      "icon": "fas fa-globe",
+      "destinations": [
+        "pages/levels.html"
+      ]
+    },
+    {
+      "id": "subject-8080ee6f48",
+      "name": "اللغة العربية",
+      "description": "نماذج في القراءة والإملاء والقواعد",
+      "icon": "fas fa-language",
+      "destinations": [
+        "pages/levels.html",
+        "levels/branch/subjects/modul-Scienc-exactes1/arabic-sc-experimentales01.html",
+        "levels/middle/modul-middle01/arabic-middle01.html",
+        "levels/middle/modul-middle02/arabic-middle02.html",
+        "levels/middle/modul-middle03/arabic-middle03.html",
+        "levels/middle/modul-middle04/arabic-middle04.html",
+        "levels/primary/modul-preparation/arabic-preparation.html",
+        "levels/primary/modul-primry01/arabic-primry01.html",
+        "levels/primary/modul-primry02/arabic-primry02.html",
+        "levels/primary/modul-primry03/arabic-primry03.html",
+        "levels/primary/modul-primry04/arabic-primry04.html",
+        "levels/primary/modul-primry05/arabic-primry05.html"
+      ]
+    },
+    {
+      "id": "subject-6c46ed74f7",
+      "name": "اللغة الفرنسية",
+      "description": "Français - نماذج شاملة",
+      "icon": "fas fa-globe",
+      "destinations": [
+        "pages/levels.html",
+        "levels/branch/subjects/modul-secondary01/french-secondary01.html",
+        "levels/middle/modul-middle01/french-middle01.html",
+        "levels/middle/modul-middle02/french-middle02.html",
+        "levels/middle/modul-middle03/french-middle03.html",
+        "levels/middle/modul-middle04/french-middle04.html",
+        "levels/primary/modul-preparation/french-preparation.html",
+        "levels/primary/modul-primry01/french-primry01.html",
+        "levels/primary/modul-primry02/french-primry02.html",
+        "levels/primary/modul-primry03/french-primry03.html",
+        "levels/primary/modul-primry04/french-primry04.html",
+        "levels/primary/modul-primry05/french-primry05.html"
+      ]
+    },
+    {
+      "id": "subject-eddb831eaa",
+      "name": "علوم الحياة",
+      "description": "نماذج للطور الثانوي",
+      "icon": "fas fa-dna",
+      "destinations": [
+        "pages/levels.html"
+      ]
+    }
+  ]
+}

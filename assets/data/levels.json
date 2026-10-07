@@ -1,0 +1,116 @@
+{
+  "schemaVersion": 1,
+  "cycles": [
+    {
+      "id": "primary",
+      "name": "الطور الابتدائي",
+      "icon": "fas fa-child",
+      "levels": [
+        {
+          "id": "level-843807949e",
+          "cycleId": "primary",
+          "name": "التحضيري",
+          "href": "levels/primary/preparation.html"
+        },
+        {
+          "id": "level-0d9bc53b65",
+          "cycleId": "primary",
+          "name": "الأولى",
+          "href": "levels/primary/primry01.html"
+        },
+        {
+          "id": "level-126cfee017",
+          "cycleId": "primary",
+          "name": "الثانية",
+          "href": "levels/primary/primry02.html"
+        },
+        {
+          "id": "level-6e7690ed60",
+          "cycleId": "primary",
+          "name": "الثالثة",
+          "href": "levels/primary/primry03.html"
+        },
+        {
+          "id": "level-a8ca08399d",
+          "cycleId": "primary",
+          "name": "الرابعة",
+          "href": "levels/primary/primry04.html"
+        },
+        {
+          "id": "level-c897470c47",
+          "cycleId": "primary",
+          "name": "الخامسة",
+          "href": "levels/primary/primry05.html"
+        }
+      ]
+    },
+    {
+      "id": "middle",
+      "name": "الطور المتوسط",
+      "icon": "fas fa-user-graduate",
+      "levels": [
+        {
+          "id": "level-0e5ae537b8",
+          "cycleId": "middle",
+          "name": "الأولى",
+          "href": "levels/middle/middle01.html"
+        },
+        {
+          "id": "level-92f52e4d4b",
+          "cycleId": "middle",
+          "name": "الثانية",
+          "href": "levels/middle/middle02.html"
+        },
+        {
+          "id": "level-268ba153c2",
+          "cycleId": "middle",
+          "name": "الثالثة",
+          "href": "levels/middle/middle03.html"
+        },
+        {
+          "id": "level-f63e7234e0",
+          "cycleId": "middle",
+          "name": "الرابعة",
+          "href": "levels/middle/middle04.html"
+        },
+        {
+          "id": "level-bdee828793",
+          "cycleId": "middle",
+          "name": "إمتحان المتوسط",
+          "href": "levels/middle/middle-bem.html"
+        }
+      ]
+    },
+    {
+      "id": "secondary",
+      "name": "الطور الثانوي",
+      "icon": "fas fa-university",
+      "levels": [
+        {
+          "id": "level-10e5147789",
+          "cycleId": "secondary",
+          "name": "الأولى",
+          "href": "pages/branch.html"
+        },
+        {
+          "id": "level-94d5545a2a",
+          "cycleId": "secondary",
+          "name": "الثانية",
+          "href": "pages/branch.html"
+        },
+        {
+          "id": "level-3069369fff",
+          "cycleId": "secondary",
+          "name": "الثالثة",
+          "href": "pages/branch.html"
+        },
+        {
+          "id": "level-2b4ea05c00",
+          "cycleId": "secondary",
+          "name": "إمتحان البكالوريا",
+          "href": "pages/branch.html"
+        }
+      ]
+    }
+  ]
+}
