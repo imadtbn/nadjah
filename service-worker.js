@@ -21,6 +21,7 @@ const APP_SHELL = [
   './assets/data/levels.json',
   './assets/data/subjects.json',
   './assets/data/branches.json',
+  './assets/data/resources.json',
   './assets/images/icon22.png'
 ];
 
