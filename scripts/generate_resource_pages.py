@@ -60,6 +60,10 @@ def make_meta_chips(resource: dict) -> str:
         values.append(resource["subject"])
     if resource.get("cycleId"):
         values.append(CYCLE_LABELS.get(resource["cycleId"], resource["cycleId"]))
+    if resource.get("levelLabel"):
+        values.append(resource["levelLabel"])
+    if resource.get("branch"):
+        values.append(resource["branch"])
     if resource.get("semester"):
         values.append(f"الفصل {resource['semester']}")
     values.append(TYPE_LABELS.get(resource.get("type"), "نموذج"))
@@ -173,7 +177,13 @@ def render(resource: dict, resources: list[dict]) -> str:
         "inLanguage": "ar-DZ",
         "learningResourceType": TYPE_LABELS.get(resource.get("type"), "نموذج تعليمي"),
         "isAccessibleForFree": True,
-        "educationalLevel": CYCLE_LABELS.get(resource.get("cycleId"), ""),
+        "educationalLevel": " - ".join(
+            value for value in [
+                CYCLE_LABELS.get(resource.get("cycleId"), ""),
+                resource.get("levelLabel"),
+                resource.get("branch"),
+            ] if value
+        ),
         "about": subject,
     }
 
