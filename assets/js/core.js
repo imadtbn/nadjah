@@ -57,7 +57,21 @@
     }
 
     function initLenisAndGsap() {
-        if (!window.Lenis || !window.gsap || !window.ScrollTrigger) return;
+        const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+        const mobileLike = window.matchMedia('(max-width: 768px), (pointer: coarse)').matches;
+
+        if (!window.gsap || !window.ScrollTrigger) return;
+
+        gsap.registerPlugin(ScrollTrigger);
+
+        if (reduceMotion || mobileLike || !window.Lenis) {
+            document.documentElement.style.scrollBehavior = 'smooth';
+            document.querySelectorAll('.reveal').forEach((el) => {
+                el.style.opacity = '1';
+                el.style.transform = 'none';
+            });
+            return;
+        }
 
         const lenis = new Lenis({
             duration: 1.2,
@@ -66,7 +80,6 @@
         });
         state.lenis = lenis;
 
-        gsap.registerPlugin(ScrollTrigger);
         lenis.on('scroll', ScrollTrigger.update);
 
         const raf = (time) => {
@@ -182,7 +195,9 @@
         if (!ctx) return;
 
         const stars = [];
-        const starCount = window.matchMedia('(max-width: 768px)').matches ? 90 : 160;
+        const mobileLike = window.matchMedia('(max-width: 768px), (pointer: coarse)').matches;
+        const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+        const starCount = mobileLike ? 48 : 140;
         let mouseX = -9999;
         let mouseY = -9999;
 
@@ -266,10 +281,19 @@
                 star.update();
                 star.draw();
             });
-            if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) drawConnections();
-            requestAnimationFrame(animate);
+            if (!reduceMotion && !mobileLike) drawConnections();
+            if (!document.hidden && !reduceMotion) requestAnimationFrame(animate);
         };
-        animate();
+
+        if (reduceMotion) {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            stars.forEach((star) => star.draw());
+        } else {
+            animate();
+            document.addEventListener('visibilitychange', () => {
+                if (!document.hidden) requestAnimationFrame(animate);
+            });
+        }
     }
 
     function initSmoothAnchors() {
@@ -505,12 +529,58 @@
         });
     }
 
+    function initPwa() {
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                const swUrl = new URL('../../service-worker.js', coreBaseUrl).href;
+                navigator.serviceWorker.register(swUrl).catch((error) => {
+                    console.warn('تعذر تسجيل Service Worker:', error);
+                });
+            });
+        }
+
+        const standalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
+        if (standalone) return;
+
+        let installPrompt = null;
+        const button = document.createElement('button');
+        button.type = 'button';
+        button.className = 'nadjah-install-btn';
+        button.innerHTML = '<i class="fas fa-download" aria-hidden="true"></i><span>تثبيت المنصة</span>';
+        button.hidden = true;
+        button.setAttribute('aria-label', 'تثبيت منصة النجاح');
+        document.body.appendChild(button);
+
+        window.addEventListener('beforeinstallprompt', (event) => {
+            event.preventDefault();
+            installPrompt = event;
+            button.hidden = false;
+        });
+
+        button.addEventListener('click', async () => {
+            if (!installPrompt) return;
+            installPrompt.prompt();
+            try {
+                await installPrompt.userChoice;
+            } finally {
+                installPrompt = null;
+                button.hidden = true;
+            }
+        });
+
+        window.addEventListener('appinstalled', () => {
+            installPrompt = null;
+            button.hidden = true;
+        });
+    }
+
     function init() {
         if (state.initialized) return;
         state.initialized = true;
         ensureUxStyles();
         state.dataReady = loadCentralData();
         initLoader();
+        initPwa();
         initLenisAndGsap();
         initStatistics();
         initCustomCursor();
