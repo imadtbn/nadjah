@@ -1467,3 +1467,24 @@
 .doc-card[hidden] {
     display: none !important;
 }
+
+
+/* ===== Clear desktop breadcrumb spacing ===== */
+@media (min-width: 769px) {
+    .breadcrumb {
+        padding-top: 8rem !important;
+        padding-bottom: 1.25rem !important;
+        margin-bottom: .35rem !important;
+        position: relative;
+    }
+
+    .breadcrumb::after {
+        content: '';
+        position: absolute;
+        inset-inline: 3rem;
+        bottom: .25rem;
+        height: 1px;
+        background: linear-gradient(90deg, transparent, rgba(255,215,0,.18), transparent);
+        pointer-events: none;
+    }
+}
