@@ -82,32 +82,40 @@
 </div>
 <div aria-label="فلاتر البحث" class="search-toolbar">
 <input id="searchQuery" placeholder="مثال: رياضيات الرابعة متوسط الفصل الثاني" type="search"/>
+<div class="search-filter-step" data-step="1">
+<span class="search-filter-label">1. الطور</span>
 <select aria-label="الطور" id="cycleFilter">
 <option value="">كل الأطوار</option>
 <option value="primary">ابتدائي</option>
 <option value="middle">متوسط</option>
 <option value="secondary">ثانوي</option>
 </select>
-<select aria-label="المستوى" id="levelFilter">
-<option value="">كل المستويات</option>
-</select>
-<select aria-label="المادة" id="subjectFilter">
-<option value="">كل المواد</option>
-</select>
-<select aria-label="نوع المورد" id="typeFilter">
-<option value="">كل الأنواع</option>
-<option value="homework">فروض</option>
-<option value="exam">اختبارات</option>
-<option value="exercise">تمارين</option>
-<option value="revision">مراجعة</option>
-</select>
-<select aria-label="الفصل" id="semesterFilter">
-<option value="">كل الفصول</option>
-<option value="1">الفصل الأول</option>
-<option value="2">الفصل الثاني</option>
-<option value="3">الفصل الثالث</option>
+</div>
+<div class="search-filter-step is-disabled" data-step="2">
+<span class="search-filter-label">2. السنة</span>
+<select aria-label="السنة التعليمية" disabled id="levelFilter">
+<option value="">اختر الطور أولًا</option>
 </select>
 </div>
+<div class="search-filter-step is-disabled" data-step="3">
+<span class="search-filter-label">3. المادة</span>
+<select aria-label="المادة" disabled id="subjectFilter">
+<option value="">اختر السنة أولًا</option>
+</select>
+</div>
+<div class="search-filter-step is-disabled" data-step="4">
+<span class="search-filter-label">4. نوع الموضوع</span>
+<select aria-label="نوع المورد" disabled id="typeFilter">
+<option value="">اختر المادة أولًا</option>
+</select>
+</div>
+<div class="search-filter-step is-disabled" data-step="5">
+<span class="search-filter-label">5. الفصل</span>
+<select aria-label="الفصل" disabled id="semesterFilter">
+<option value="">اختر نوع الموضوع أولًا</option>
+</select>
+</div>
+
 <div aria-live="polite" class="search-summary" id="searchSummary">جاري تحميل قاعدة النماذج...</div>
 <section aria-label="نتائج البحث" class="search-results-grid" id="searchResults"></section><div aria-label="إعلان" class="ad-slot ad-slot--in-article" data-ad-type="in-article" data-site-ad="true"><span class="ad-label">إعلان</span><ins class="adsbygoogle" data-ad-client="ca-pub-5656416032906373" data-ad-format="fluid" data-ad-layout="in-article" data-ad-slot="7319898418" data-full-width-responsive="true" style="display:block;text-align:center"></ins></div>
 </div>
