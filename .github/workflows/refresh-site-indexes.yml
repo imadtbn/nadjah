@@ -1,5 +1,9 @@
 name: Refresh site indexes and central content
 
+concurrency:
+  group: nadjah-refresh-main
+  cancel-in-progress: true
+
 on:
   push:
     branches: [main]
@@ -62,4 +66,5 @@ jobs:
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add assets/data/*.json sitemap.xml robots.txt site.webmanifest service-worker.js offline.html '*.html' 'pages/*.html' 'levels/**/*.html' 'resources/*.html'
           git commit -m "chore: sync pages from central content data [skip ci]"
-          git push
+          git pull --rebase origin main
+          git push origin main
