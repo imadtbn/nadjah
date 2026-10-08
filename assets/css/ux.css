@@ -1555,3 +1555,113 @@
         width: 100%;
     }
 }
+
+
+/* ===== Search results layout and progressive loading ===== */
+.search-results-grid {
+    align-items: stretch;
+}
+
+.search-result-card {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    min-height: 150px;
+    width: 100%;
+    overflow: hidden;
+}
+
+.search-result-card h2 {
+    word-break: normal !important;
+    overflow-wrap: anywhere;
+    white-space: normal;
+}
+
+.search-result-meta {
+    margin-top: auto;
+}
+
+.search-load-more-wrap {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin: 1.4rem 0 .5rem;
+}
+
+.search-load-more {
+    min-width: 190px;
+    min-height: 46px;
+    padding: .72rem 1.2rem;
+    border-radius: 999px;
+    border: 1px solid rgba(255,215,0,.48);
+    background: rgba(255,215,0,.08);
+    color: #ffd700;
+    font: inherit;
+    font-weight: 800;
+    cursor: pointer;
+    transition: .22s ease;
+}
+
+.search-load-more:hover {
+    background: rgba(255,215,0,.15);
+    box-shadow: 0 8px 22px rgba(255,215,0,.12);
+    transform: translateY(-1px);
+}
+
+.search-load-more[hidden] {
+    display: none !important;
+}
+
+@media (min-width: 769px) {
+    .search-toolbar {
+        grid-template-columns: repeat(5, minmax(0, 1fr)) !important;
+    }
+
+    .search-toolbar > input {
+        grid-column: 1 / -1 !important;
+        width: 100%;
+    }
+
+    .search-results-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+        gap: 1rem !important;
+    }
+}
+
+@media (max-width: 768px) {
+    .search-toolbar {
+        grid-template-columns: 1fr !important;
+    }
+
+    .search-toolbar > input {
+        grid-column: auto !important;
+    }
+
+    .search-results-grid {
+        grid-template-columns: 1fr !important;
+        gap: .75rem !important;
+    }
+
+    .search-result-card {
+        min-height: 0;
+        padding: 1rem !important;
+    }
+
+    .search-result-card h2 {
+        font-size: .96rem !important;
+        line-height: 1.55 !important;
+    }
+
+    .search-result-meta {
+        gap: .35rem !important;
+    }
+
+    .search-chip {
+        font-size: .72rem;
+        padding: .22rem .46rem;
+    }
+
+    .search-load-more {
+        width: min(100%, 320px);
+    }
+}
