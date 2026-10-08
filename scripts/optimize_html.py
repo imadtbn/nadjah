@@ -17,6 +17,100 @@ EXTERNAL_HEAVY = (
 )
 
 
+ADSENSE_CLIENT = "ca-pub-5656416032906373"
+AD_UNITS = (
+    {"slot": "7319898418", "kind": "in-article"},
+    {"slot": "3143411927", "kind": "display"},
+)
+
+
+def ensure_local_asset(soup: BeautifulSoup, tag_name: str, attr: str, value: str, **attrs) -> bool:
+    if soup.find(tag_name, attrs={attr: lambda current: current and current.split("?", 1)[0] == value}):
+        return False
+    tag = soup.new_tag(tag_name)
+    tag[attr] = value
+    for key, attr_value in attrs.items():
+        tag[key.replace("_", "-")] = attr_value
+    if tag_name == "link":
+        soup.head.append(tag)
+    else:
+        soup.body.append(tag)
+    return True
+
+
+def make_ad_unit(soup: BeautifulSoup, slot: str, kind: str):
+    wrapper = soup.new_tag("div")
+    wrapper["class"] = ["ad-slot", f"ad-slot--{kind}"]
+    wrapper["data-site-ad"] = "true"
+    wrapper["data-ad-type"] = kind
+    wrapper["aria-label"] = "إعلان"
+
+    label = soup.new_tag("span")
+    label["class"] = ["ad-label"]
+    label.string = "إعلان"
+    wrapper.append(label)
+
+    ins = soup.new_tag("ins")
+    ins["class"] = ["adsbygoogle"]
+    ins["style"] = "display:block"
+    ins["data-ad-client"] = ADSENSE_CLIENT
+    ins["data-ad-slot"] = slot
+    ins["data-full-width-responsive"] = "true"
+    if kind == "in-article":
+        ins["data-ad-layout"] = "in-article"
+        ins["data-ad-format"] = "fluid"
+        ins["style"] = "display:block;text-align:center"
+    else:
+        ins["data-ad-format"] = "auto"
+    wrapper.append(ins)
+    return wrapper
+
+
+def normalize_ads(path: Path, soup: BeautifulSoup, prefix: str) -> bool:
+    if not soup.body or not soup.head:
+        return False
+
+    dirty = False
+
+    for old in list(soup.select(".ad-slot[data-site-ad], .ad-banner[data-site-ad], .ad-slot:has(ins.adsbygoogle), .ad-banner:has(ins.adsbygoogle)")):
+        old.decompose()
+        dirty = True
+
+    ads_css = prefix + "assets/css/ads.css"
+    if not soup.find("link", href=lambda value: value and value.split("?", 1)[0] == ads_css):
+        link = soup.new_tag("link", rel="stylesheet", href=ads_css)
+        soup.head.append(link)
+        dirty = True
+
+    site_tags = prefix + "assets/js/site-tags.js"
+    if not soup.find("script", src=lambda value: value and value.split("?", 1)[0] == site_tags):
+        script = soup.new_tag("script", src=site_tags)
+        script["defer"] = ""
+        soup.body.append(script)
+        dirty = True
+
+    first_ad = make_ad_unit(soup, AD_UNITS[0]["slot"], AD_UNITS[0]["kind"])
+    second_ad = make_ad_unit(soup, AD_UNITS[1]["slot"], AD_UNITS[1]["kind"])
+
+    hero = soup.select_one(".hero-subject, .hero-year, .page-hero, .hero")
+    main = soup.find("main")
+    breadcrumb = soup.select_one(".breadcrumb")
+    first_anchor = hero or (main.find("section") if main else None) or main or breadcrumb or soup.find("header")
+
+    if first_anchor:
+        first_anchor.insert_after(first_ad)
+    else:
+        soup.body.insert(0, first_ad)
+
+    footer = soup.find("footer")
+    if footer:
+        footer.insert_before(second_ad)
+    else:
+        soup.body.append(second_ad)
+
+    return True
+
+
 def asset_version(path: Path) -> str:
     return hashlib.sha256(path.read_bytes()).hexdigest()[:10]
 
@@ -70,6 +164,9 @@ def optimize(path: Path) -> bool:
         script = soup.new_tag("script", src=prefix + "assets/js/core.js")
         script["defer"] = ""
         soup.body.append(script)
+        dirty = True
+
+    if normalize_ads(path, soup, prefix):
         dirty = True
 
     if version_local_assets(path, soup):
