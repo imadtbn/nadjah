@@ -97,28 +97,35 @@ window.filterDocs = function filterDocs(type, source) {
     }
 
     const scope = document.querySelector('.semester-content.active') || document;
-    scope.querySelectorAll('.doc-card').forEach((card) => {
+    const cards = [...scope.querySelectorAll('.doc-card')];
+
+    cards.forEach((card) => {
         const cardType = String(card.dataset.type || '').trim();
         const show = normalizedType === 'all' || cardType === normalizedType;
 
+        if (window.gsap) {
+            gsap.killTweensOf(card);
+            gsap.set(card, { clearProps: 'opacity,transform,visibility' });
+        }
+
         card.hidden = !show;
         card.setAttribute('aria-hidden', String(!show));
+        card.style.removeProperty('display');
 
         if (show) {
-            card.style.removeProperty('display');
-
-            if (window.gsap && !window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
-                gsap.killTweensOf(card);
-                gsap.fromTo(card, { opacity: 0, y: 14 }, {
-                    opacity: 1,
-                    y: 0,
-                    duration: 0.28,
-                    ease: 'power2.out',
-                    clearProps: 'opacity,transform'
-                });
-            }
+            card.style.opacity = '1';
+            card.style.visibility = 'visible';
+            card.style.transform = 'none';
+        } else {
+            card.style.removeProperty('opacity');
+            card.style.removeProperty('visibility');
+            card.style.removeProperty('transform');
         }
     });
+
+    if (window.ScrollTrigger?.refresh) {
+        requestAnimationFrame(() => window.ScrollTrigger.refresh());
+    }
 };
 
 window.downloadDoc = function downloadDoc(button) {
