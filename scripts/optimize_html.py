@@ -95,7 +95,11 @@ def normalize_ads(path: Path, soup: BeautifulSoup, prefix: str) -> bool:
     hero = soup.select_one(".hero-subject, .hero-year, .page-hero, .hero")
     main = soup.find("main")
     breadcrumb = soup.select_one(".breadcrumb")
-    first_anchor = hero or (main.find("section") if main else None) or main or breadcrumb or soup.find("header")
+
+    if path.relative_to(ROOT).as_posix() == "pages/search.html":
+        first_anchor = soup.select_one(".search-page-head")
+    else:
+        first_anchor = hero or (main.find("section") if main else None) or main or breadcrumb or soup.find("header")
 
     if first_anchor:
         first_anchor.insert_after(first_ad)
