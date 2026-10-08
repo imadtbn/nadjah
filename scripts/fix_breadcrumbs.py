@@ -94,6 +94,68 @@ def build_basename_index(pages: list[Path]) -> dict[str, list[Path]]:
     return index
 
 
+def normalize_semester_breadcrumb(page: Path, soup: BeautifulSoup) -> bool:
+    crumb = soup.select_one(".breadcrumb")
+    if not crumb or not page.name.endswith("-more.html"):
+        return False
+
+    semester_match = None
+    for value, label in (("smst1", "الفصل الأول"), ("smst2", "الفصل الثاني"), ("smst3", "الفصل الثالث")):
+        if value in page.parts:
+            semester_match = (value, label)
+            break
+    if not semester_match:
+        return False
+
+    subject_page_name = page.name
+    subject_page_name = subject_page_name.replace("-sem01-more.html", ".html")
+    subject_page_name = subject_page_name.replace("-sem02-more.html", ".html")
+    subject_page_name = subject_page_name.replace("-sem03-more.html", ".html")
+    subject_page = page.parent.parent / subject_page_name
+    if not subject_page.exists():
+        return False
+
+    links = list(crumb.select("a[href]"))
+    if len(links) < 3:
+        return False
+
+    home = links[0]
+    cycle = links[1]
+    year = links[2]
+
+    subject_badge = soup.select_one(".subject-badge span")
+    current = crumb.select_one(".breadcrumb-current")
+    subject_label = clean_text(subject_badge.get_text(" ", strip=True) if subject_badge else "")
+    if not subject_label and current:
+        subject_label = clean_text(current.get_text(" ", strip=True))
+    if not subject_label:
+        return False
+
+    def clone_link(source):
+        return BeautifulSoup(str(source), "html.parser").find("a")
+
+    crumb.clear()
+    for index, link in enumerate((home, cycle, year)):
+        crumb.append(clone_link(link))
+        sep = soup.new_tag("i")
+        sep["class"] = ["fas", "fa-chevron-left"]
+        crumb.append(sep)
+
+    subject_link = soup.new_tag("a", href=relative_href(page, subject_page))
+    subject_link.string = subject_label
+    crumb.append(subject_link)
+
+    sep = soup.new_tag("i")
+    sep["class"] = ["fas", "fa-chevron-left"]
+    crumb.append(sep)
+
+    span = soup.new_tag("span")
+    span["class"] = ["breadcrumb-current"]
+    span.string = semester_match[1]
+    crumb.append(span)
+    return True
+
+
 def repair_page(page: Path, basename_index: dict[str, list[Path]]) -> tuple[bool, list[str]]:
     raw = page.read_text(encoding="utf-8", errors="ignore")
     if "breadcrumb" not in raw:
@@ -104,7 +166,8 @@ def repair_page(page: Path, basename_index: dict[str, list[Path]]) -> tuple[bool
     if not crumb:
         return False, []
 
-    dirty = False
+    dirty = normalize_semester_breadcrumb(page, soup)
+    crumb = soup.select_one(".breadcrumb")
     unresolved: list[str] = []
 
     for link in crumb.select("a[href]"):
