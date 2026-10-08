@@ -4,6 +4,7 @@
 from __future__ import annotations
 
 from pathlib import Path
+import hashlib
 from bs4 import BeautifulSoup
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -14,6 +15,40 @@ EXTERNAL_HEAVY = (
     "ScrollTrigger.min.js",
     "lenis.min.js",
 )
+
+
+def asset_version(path: Path) -> str:
+    return hashlib.sha256(path.read_bytes()).hexdigest()[:10]
+
+
+def version_local_assets(page_path: Path, soup: BeautifulSoup) -> bool:
+    dirty = False
+
+    for tag, attr in [(tag, "href") for tag in soup.find_all("link", href=True)] + [
+        (tag, "src") for tag in soup.find_all("script", src=True)
+    ]:
+        value = tag.get(attr, "")
+        if not value or value.startswith(("http://", "https://", "//", "data:")):
+            continue
+
+        clean_value = value.split("?", 1)[0].split("#", 1)[0]
+        if not clean_value.lower().endswith((".css", ".js")):
+            continue
+
+        target = (page_path.parent / clean_value).resolve()
+        try:
+            target.relative_to(ROOT)
+        except ValueError:
+            continue
+        if not target.exists() or not target.is_file():
+            continue
+
+        desired = f"{clean_value}?v={asset_version(target)}"
+        if value != desired:
+            tag[attr] = desired
+            dirty = True
+
+    return dirty
 
 def optimize(path: Path) -> bool:
     raw = path.read_text(encoding="utf-8", errors="ignore")
@@ -35,6 +70,9 @@ def optimize(path: Path) -> bool:
         script = soup.new_tag("script", src=prefix + "assets/js/core.js")
         script["defer"] = ""
         soup.body.append(script)
+        dirty = True
+
+    if version_local_assets(path, soup):
         dirty = True
 
     has_shader = soup.select_one("#shader-canvas") is not None
