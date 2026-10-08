@@ -1,4 +1,4 @@
-const CACHE_VERSION = 'nadjah-v4';
+const CACHE_VERSION = 'nadjah-v5';
 const STATIC_CACHE = `${CACHE_VERSION}-static`;
 const RUNTIME_CACHE = `${CACHE_VERSION}-runtime`;
 
@@ -80,22 +80,37 @@ self.addEventListener('fetch', (event) => {
   }
 
   const url = new URL(request.url);
-  const isStatic = /\.(?:css|js|png|jpg|jpeg|webp|svg|woff2?|json)$/i.test(url.pathname);
+  const isFreshAsset = /\.(?:css|js|json)$/i.test(url.pathname);
+  const isCacheFirstAsset = /\.(?:png|jpg|jpeg|webp|svg|woff2?)$/i.test(url.pathname);
 
-  if (isStatic) {
+  if (isFreshAsset) {
+    event.respondWith(
+      fetch(request, { cache: 'no-store' })
+        .then((response) => {
+          if (response.ok) {
+            const copy = response.clone();
+            caches.open(RUNTIME_CACHE).then((cache) => cache.put(request, copy));
+          }
+          return response;
+        })
+        .catch(async () => {
+          return (await caches.match(request)) || Response.error();
+        })
+    );
+    return;
+  }
+
+  if (isCacheFirstAsset) {
     event.respondWith(
       caches.match(request).then((cached) => {
-        const network = fetch(request)
-          .then((response) => {
-            if (response.ok) {
-              const copy = response.clone();
-              caches.open(RUNTIME_CACHE).then((cache) => cache.put(request, copy));
-            }
-            return response;
-          })
-          .catch(() => cached);
-
-        return cached || network;
+        if (cached) return cached;
+        return fetch(request).then((response) => {
+          if (response.ok) {
+            const copy = response.clone();
+            caches.open(RUNTIME_CACHE).then((cache) => cache.put(request, copy));
+          }
+          return response;
+        });
       })
     );
   }
