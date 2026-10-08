@@ -508,87 +508,108 @@
     function initMobileMenu() {
         const button = safeQuery('.mobile-toggle');
         const nav = safeQuery('.nav-links');
-        if (!button || !nav) return;
+        if (!nav) return;
 
-        const navItems = [
+        const isMobile = () => window.innerWidth <= 768;
+        const current = new URL(window.location.href);
+
+        const primary = [
             { label: 'الرئيسية', icon: 'fa-house', href: new URL('index.html', siteRootUrl).href },
             { label: 'البحث', icon: 'fa-magnifying-glass', href: new URL('pages/search.html', siteRootUrl).href },
             { label: 'الأطوار', icon: 'fa-layer-group', href: new URL('pages/levels.html', siteRootUrl).href },
-            { label: 'المواد', icon: 'fa-book-open', href: new URL('pages/subjects.html', siteRootUrl).href },
-            { label: 'الشعب', icon: 'fa-graduation-cap', href: new URL('pages/branch.html', siteRootUrl).href },
+            { label: 'المواد', icon: 'fa-book-open', href: new URL('pages/subjects.html', siteRootUrl).href }
+        ];
+        const secondary = [
+            { label: 'الشعب الدراسية', icon: 'fa-graduation-cap', href: new URL('pages/branch.html', siteRootUrl).href },
             { label: 'مساحتي', icon: 'fa-bookmark', href: new URL('pages/my.html', siteRootUrl).href },
             { label: 'تواصل', icon: 'fa-envelope', href: new URL('pages/contact.html', siteRootUrl).href }
         ];
 
-        const currentUrl = new URL(window.location.href);
-        nav.innerHTML = navItems.map((item) => {
-            const target = new URL(item.href);
-            const active = currentUrl.pathname === target.pathname;
-            return `
-                <a href="${item.href}"${active ? ' class="active"' : ''}>
+        const activeClass = (href) => current.pathname === new URL(href).pathname ? ' active' : '';
+
+        let mobileBar = document.querySelector('.nadjah-mobile-nav');
+        let moreSheet = document.querySelector('.nadjah-more-sheet');
+        let backdrop = document.querySelector('.nadjah-more-backdrop');
+
+        if (!mobileBar) {
+            mobileBar = document.createElement('nav');
+            mobileBar.className = 'nadjah-mobile-nav';
+            mobileBar.setAttribute('aria-label', 'التنقل السريع');
+            mobileBar.innerHTML = primary.map((item) => `
+                <a href="${item.href}" class="mobile-nav-item${activeClass(item.href)}">
                     <i class="fas ${item.icon}" aria-hidden="true"></i>
                     <span>${item.label}</span>
                 </a>
+            `).join('') + `
+                <button type="button" class="mobile-nav-item mobile-nav-more" aria-expanded="false">
+                    <i class="fas fa-ellipsis" aria-hidden="true"></i>
+                    <span>المزيد</span>
+                </button>
             `;
-        }).join('');
+            document.body.appendChild(mobileBar);
+        }
 
-        button.setAttribute('aria-label', button.getAttribute('aria-label') || 'فتح القائمة');
-        button.setAttribute('aria-expanded', 'false');
-        nav.setAttribute('aria-hidden', 'true');
+        if (!moreSheet) {
+            moreSheet = document.createElement('div');
+            moreSheet.className = 'nadjah-more-sheet';
+            moreSheet.setAttribute('aria-hidden', 'true');
+            moreSheet.innerHTML = `
+                <div class="nadjah-more-handle" aria-hidden="true"></div>
+                <div class="nadjah-more-title">المزيد</div>
+                <div class="nadjah-more-links">
+                    ${secondary.map((item) => `
+                        <a href="${item.href}" class="${activeClass(item.href).trim()}">
+                            <i class="fas ${item.icon}" aria-hidden="true"></i>
+                            <span>${item.label}</span>
+                        </a>
+                    `).join('')}
+                </div>
+            `;
+            document.body.appendChild(moreSheet);
+        }
 
-        let backdrop = document.querySelector('.nadjah-nav-backdrop');
         if (!backdrop) {
             backdrop = document.createElement('div');
-            backdrop.className = 'nadjah-nav-backdrop';
+            backdrop.className = 'nadjah-more-backdrop';
             document.body.appendChild(backdrop);
         }
 
-        const setOpen = (open) => {
-            nav.classList.toggle('active', open);
+        const moreButton = mobileBar.querySelector('.mobile-nav-more');
+        const setMoreOpen = (open) => {
+            moreSheet.classList.toggle('active', open);
             backdrop.classList.toggle('active', open);
-            button.setAttribute('aria-expanded', String(open));
-            nav.setAttribute('aria-hidden', String(!open));
+            moreButton?.setAttribute('aria-expanded', String(open));
+            moreSheet.setAttribute('aria-hidden', String(!open));
+        };
 
-            const icon = button.querySelector('i');
-            if (icon) {
-                icon.classList.toggle('fa-bars', !open);
-                icon.classList.toggle('fa-xmark', open);
+        moreButton?.addEventListener('click', () => {
+            setMoreOpen(!moreSheet.classList.contains('active'));
+        });
+        backdrop.addEventListener('click', () => setMoreOpen(false));
+        moreSheet.querySelectorAll('a').forEach((link) => link.addEventListener('click', () => setMoreOpen(false)));
+        document.addEventListener('keydown', (event) => {
+            if (event.key === 'Escape') setMoreOpen(false);
+        });
+
+        window.addEventListener('scroll', () => {
+            if (moreSheet.classList.contains('active')) setMoreOpen(false);
+        }, { passive: true });
+
+        const syncMode = () => {
+            const mobile = isMobile();
+            mobileBar.hidden = !mobile;
+            if (button) button.style.display = mobile ? 'none' : '';
+            if (mobile) {
+                nav.classList.remove('active');
+                nav.setAttribute('aria-hidden', 'true');
+            } else {
+                nav.removeAttribute('aria-hidden');
+                setMoreOpen(false);
             }
         };
 
-        const close = () => setOpen(false);
-
-        button.addEventListener('click', (event) => {
-            event.stopPropagation();
-            setOpen(!nav.classList.contains('active'));
-        });
-
-        backdrop.addEventListener('click', close);
-
-        nav.querySelectorAll('a').forEach((link) => {
-            link.addEventListener('click', close);
-        });
-
-        let openedAtScrollY = window.scrollY;
-        window.addEventListener('scroll', () => {
-            if (!nav.classList.contains('active')) return;
-            if (Math.abs(window.scrollY - openedAtScrollY) >= 28) close();
-        }, { passive: true });
-
-        button.addEventListener('click', () => {
-            if (nav.classList.contains('active')) openedAtScrollY = window.scrollY;
-        });
-
-        window.addEventListener('resize', () => {
-            if (window.innerWidth > 768) close();
-        }, { passive: true });
-
-        document.addEventListener('keydown', (event) => {
-            if (event.key === 'Escape' && nav.classList.contains('active')) {
-                close();
-                button.focus();
-            }
-        });
+        window.addEventListener('resize', syncMode, { passive: true });
+        syncMode();
     }
     function initScrollTop() {
         const button = document.getElementById('scrollTopBtn');
