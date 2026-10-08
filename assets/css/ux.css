@@ -1057,3 +1057,96 @@
         transform: scale(.99);
     }
 }
+
+
+/* ===== Unified educational card actions ===== */
+.doc-card .doc-buttons {
+    width: 100%;
+    display: grid !important;
+    grid-template-columns: repeat(4,minmax(0,1fr));
+    gap: .55rem !important;
+    margin-top: .85rem !important;
+    align-items: stretch;
+}
+
+.doc-card .doc-buttons > a,
+.doc-card .doc-buttons > button {
+    min-width: 0;
+    min-height: 44px;
+    margin: 0 !important;
+    padding: .7rem .55rem !important;
+    border-radius: 11px !important;
+    display: inline-flex !important;
+    align-items: center;
+    justify-content: center;
+    gap: .4rem;
+    font: inherit;
+    font-size: .82rem !important;
+    font-weight: 700 !important;
+    line-height: 1.2;
+    text-align: center;
+    text-decoration: none;
+    cursor: pointer;
+    white-space: normal;
+}
+
+.doc-card .doc-buttons .doc-action-detail,
+.doc-card .doc-buttons .resource-detail-link {
+    background: rgba(255,215,0,.08) !important;
+    border: 1px solid rgba(255,215,0,.5) !important;
+    color: #ffe66d !important;
+}
+
+.doc-card .doc-buttons .doc-action-preview,
+.doc-card .doc-buttons .doc-preview-btn {
+    background: rgba(255,255,255,.045) !important;
+    border: 1px solid rgba(255,215,0,.34) !important;
+    color: var(--gold,#d4af37) !important;
+}
+
+.doc-card .doc-buttons .doc-action-download,
+.doc-card .doc-buttons a.doc-download-btn:not(.resource-detail-link) {
+    background: linear-gradient(135deg,var(--gold,#d4af37),var(--accent,#f0c96b)) !important;
+    border: 1px solid rgba(255,215,0,.72) !important;
+    color: var(--void,#0a0a0f) !important;
+}
+
+.doc-card .doc-buttons .quick-favorite-action {
+    background: rgba(255,215,0,.055) !important;
+    border: 1px solid rgba(255,215,0,.48) !important;
+    color: #ffd700 !important;
+}
+
+.doc-card .doc-buttons .quick-favorite-action.active {
+    background: rgba(239,68,68,.11) !important;
+    border-color: rgba(248,113,113,.7) !important;
+    color: #f87171 !important;
+}
+
+.doc-card .doc-buttons > a:hover,
+.doc-card .doc-buttons > button:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 6px 16px rgba(212,175,55,.16) !important;
+}
+
+@media (max-width: 768px) {
+    .doc-card .doc-buttons {
+        grid-template-columns: repeat(2,minmax(0,1fr)) !important;
+        gap: .45rem !important;
+    }
+
+    .doc-card .doc-buttons > a,
+    .doc-card .doc-buttons > button {
+        min-height: 42px;
+        padding: .62rem .42rem !important;
+        font-size: .76rem !important;
+    }
+}
+
+@media (max-width: 360px) {
+    .doc-card .doc-buttons > a,
+    .doc-card .doc-buttons > button {
+        font-size: .71rem !important;
+        gap: .3rem;
+    }
+}
