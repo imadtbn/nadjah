@@ -1344,3 +1344,120 @@
         font-size: .61rem;
     }
 }
+
+
+/* ===== Desktop educational resource cards ===== */
+@media (min-width: 769px) {
+    .documents-grid {
+        max-width: 1040px;
+    }
+
+    .doc-card {
+        display: grid !important;
+        grid-template-columns: 64px minmax(0, 1fr);
+        grid-template-areas:
+            "icon info"
+            "actions actions";
+        align-items: center !important;
+        column-gap: 1rem !important;
+        row-gap: .9rem !important;
+        padding: 1.25rem 1.4rem !important;
+        min-height: 0 !important;
+    }
+
+    .doc-card:hover {
+        transform: translateY(-2px) !important;
+    }
+
+    .doc-card .doc-icon-wrap {
+        grid-area: icon;
+        width: 56px !important;
+        height: 56px !important;
+        min-width: 56px !important;
+        align-self: start;
+        margin-top: .1rem;
+    }
+
+    .doc-card .doc-info {
+        grid-area: info;
+        width: 100%;
+        min-width: 0 !important;
+        align-self: start;
+    }
+
+    .doc-card .doc-title {
+        width: 100%;
+        max-width: none;
+        margin: 0 0 .65rem !important;
+        font-size: 1.08rem !important;
+        line-height: 1.55;
+        word-break: normal !important;
+        overflow-wrap: anywhere;
+        white-space: normal;
+    }
+
+    .doc-card .doc-meta {
+        display: flex !important;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: .45rem .7rem !important;
+        width: 100%;
+        min-width: 0;
+    }
+
+    .doc-card .doc-meta > span {
+        flex: 0 0 auto;
+        min-width: 0;
+        white-space: nowrap;
+        padding: .32rem .48rem;
+        border-radius: 9px;
+        background: rgba(255,255,255,.025);
+    }
+
+    .doc-card .doc-meta > span i {
+        flex: 0 0 auto;
+    }
+
+    .doc-card .doc-actions {
+        grid-area: actions;
+        width: 100%;
+        min-width: 0;
+        display: block !important;
+        margin: 0 !important;
+    }
+
+    .doc-card .doc-buttons {
+        width: 100% !important;
+        margin: 0 !important;
+        display: grid !important;
+        grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
+        gap: .55rem !important;
+    }
+
+    .doc-card .doc-buttons > a,
+    .doc-card .doc-buttons > button {
+        width: 100%;
+        min-width: 0;
+        min-height: 42px;
+        padding: .62rem .5rem !important;
+        font-size: .8rem !important;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .doc-card .doc-buttons > a i,
+    .doc-card .doc-buttons > button i {
+        flex: 0 0 auto;
+    }
+}
+
+@media (min-width: 769px) and (max-width: 980px) {
+    .doc-card .doc-buttons {
+        grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    }
+
+    .doc-card .doc-title {
+        font-size: 1rem !important;
+    }
+}
