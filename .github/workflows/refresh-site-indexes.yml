@@ -46,6 +46,9 @@ jobs:
       - name: Generate independent resource pages
         run: python scripts/generate_resource_pages.py
 
+      - name: Repair breadcrumb navigation
+        run: python scripts/fix_breadcrumbs.py
+
       - name: Optimize generated HTML
         run: python scripts/optimize_html.py
 
