@@ -31,6 +31,20 @@ def load(name: str) -> dict:
     return json.loads((DATA_DIR / name).read_text(encoding="utf-8"))
 
 
+def normalize_subject_name(value: str) -> str:
+    value = " ".join((value or "").split())
+    aliases = {
+        "رياضيات": "الرياضيات",
+        "الرياضيات": "الرياضيات",
+        "العربية": "اللغة العربية",
+        "فرنسية": "اللغة الفرنسية",
+        "انجليزية": "اللغة الإنجليزية",
+        "الإنجليزية": "اللغة الإنجليزية",
+        "اسلامية": "التربية الإسلامية",
+    }
+    return aliases.get(value, value)
+
+
 def main() -> None:
     pages = complete_pages()
     assert pages, "no complete HTML pages found"
@@ -66,6 +80,22 @@ def main() -> None:
     total_cards = 0
     corrected_cards = 0
 
+    forbidden_template_terms = (
+        "القراءة والإملاء",
+        "القواعد النحوية",
+        "التعبير الكتابي",
+    )
+    for item in resources.get("resources", []):
+        subject = normalize_subject_name(item.get("subject", ""))
+        if subject != "اللغة العربية":
+            title = item.get("title", "")
+            assert not any(term in title for term in forbidden_template_terms), (
+                "template copy leaked into non-Arabic subject",
+                item.get("id"),
+                subject,
+                title,
+            )
+
     for path in pages:
         soup = BeautifulSoup(path.read_bytes().decode("utf-8", errors="ignore"), "html.parser")
         assert len(soup.find_all("title")) == 1, path
@@ -88,6 +118,26 @@ def main() -> None:
         corrected_cards += sum(
             1 for card in cards if card.select_one(".solution-badge.with-solution")
         )
+
+        hero = soup.select_one(".hero-subject")
+        badge = hero.select_one(".subject-badge span") if hero else None
+        resources_stat = soup.select_one('[data-subject-stat="resources"]')
+        if hero and badge and resources_stat:
+            subject = normalize_subject_name(badge.get_text(" ", strip=True))
+            rel_dir = path.parent.relative_to(ROOT).as_posix() + "/"
+            matching = [
+                item for item in resources.get("resources", [])
+                if normalize_subject_name(item.get("subject", "")) == subject
+                and item.get("page", "").startswith(rel_dir)
+            ]
+            if matching:
+                displayed = resources_stat.get_text(" ", strip=True)
+                assert not displayed.startswith("0"), (
+                    "subject page shows zero resources despite central data",
+                    path,
+                    subject,
+                    len(matching),
+                )
 
     assert stats["resources"] == len(resource_ids), stats
     assert stats["correctedResources"] == sum(
