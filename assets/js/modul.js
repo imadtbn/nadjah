@@ -26,11 +26,21 @@ ensureNadjahCore().then(() => {
 }).catch((error) => console.error('تعذر تحميل وظائف منصة النجاح المشتركة:', error));
 
 function updateSubjectStatistics() {
-    const cards = [...document.querySelectorAll('.doc-card')];
-    const corrected = cards.filter((card) => card.querySelector('.solution-badge.with-solution')).length;
+    const cards = [...document.querySelectorAll('.doc-card[data-resource-id], .doc-card')];
+
+    // Subject landing pages load their cards asynchronously. Their counters are
+    // generated from resources.json during the build, so never replace those
+    // authoritative values with a temporary 0 before the cards arrive.
+    if (!cards.length) return;
+
+    const corrected = cards.filter((card) =>
+        card.querySelector('.solution-badge.with-solution') ||
+        /مع التصحيح/.test(card.textContent || '')
+    ).length;
+
     const values = {
         resources: cards.length,
-        correctionRate: cards.length ? Math.round((corrected / cards.length) * 100) : 0
+        correctionRate: Math.round((corrected / cards.length) * 100)
     };
 
     document.querySelectorAll('[data-subject-stat]').forEach((element) => {
