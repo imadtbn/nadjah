@@ -901,3 +901,159 @@
         transform: scale(.985);
     }
 }
+
+
+/* ===== Unified luminous-gold card identity ===== */
+:root {
+    --nadjah-gold-line: #ffd700;
+    --nadjah-gold-line-soft: rgba(255,215,0,.72);
+    --nadjah-gold-glow: rgba(255,215,0,.14);
+    --nadjah-gold-glow-strong: rgba(255,215,0,.24);
+}
+
+.level-card,
+.year-btn,
+.hero-stats .stat-item,
+.year-info-item,
+.subject-stats-bar .subject-stat-item,
+.semester-tab,
+.doc-filter,
+.doc-card,
+.resource-card,
+.subject-card,
+.search-result-card,
+.resource-detail-card,
+.related-card,
+.user-resource-card,
+.user-preferences-card,
+.user-section {
+    border-color: var(--nadjah-gold-line-soft) !important;
+    box-shadow:
+        0 0 0 1px rgba(255,215,0,.035),
+        0 8px 24px rgba(0,0,0,.14);
+}
+
+.level-card:hover,
+.year-btn:hover,
+.hero-stats .stat-item:hover,
+.year-info-item:hover,
+.subject-stats-bar .subject-stat-item:hover,
+.semester-tab:hover,
+.doc-filter:hover,
+.doc-card:hover,
+.resource-card:hover,
+.subject-card:hover,
+.search-result-card:hover,
+.resource-detail-card:hover,
+.related-card:hover,
+.user-resource-card:hover {
+    border-color: var(--nadjah-gold-line) !important;
+    box-shadow:
+        0 0 0 1px rgba(255,215,0,.14),
+        0 0 18px var(--nadjah-gold-glow),
+        0 12px 30px rgba(0,0,0,.2) !important;
+}
+
+.semester-tab.active,
+.doc-filter.active,
+.nav-links a.active,
+.favorite-action.active {
+    border-color: var(--nadjah-gold-line) !important;
+    box-shadow:
+        0 0 0 1px rgba(255,215,0,.16),
+        0 0 16px var(--nadjah-gold-glow-strong) !important;
+}
+
+/* Stronger outlines for educational hierarchy cards */
+.level-card,
+.year-btn,
+.subject-card,
+.doc-card {
+    border-width: 1px !important;
+    border-style: solid !important;
+}
+
+/* Keep gold readable without flooding the interface */
+.year-btn,
+.doc-filter,
+.semester-tab {
+    color: var(--gold,#d4af37) !important;
+}
+
+.year-btn:hover,
+.doc-filter:hover,
+.doc-filter.active,
+.semester-tab:hover,
+.semester-tab.active {
+    color: #ffe66d !important;
+}
+
+/* Subtle focus treatment for keyboard and accessibility */
+.level-card:focus-visible,
+.year-btn:focus-visible,
+.subject-card:focus-visible,
+.doc-filter:focus-visible,
+.semester-tab:focus-visible,
+.doc-card a:focus-visible,
+.resource-card a:focus-visible,
+.user-resource-card:focus-visible {
+    outline: 2px solid var(--nadjah-gold-line);
+    outline-offset: 3px;
+}
+
+/* Decorative top highlight for the most important card families */
+.level-card,
+.subject-card,
+.doc-card,
+.resource-card {
+    position: relative;
+    overflow: hidden;
+}
+
+.level-card::after,
+.subject-card::after,
+.doc-card::after,
+.resource-card::after {
+    content: '';
+    position: absolute;
+    inset-inline: 12%;
+    top: 0;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(255,215,0,.9), transparent);
+    opacity: .68;
+    pointer-events: none;
+}
+
+@media (max-width: 768px) {
+    .level-card,
+    .year-btn,
+    .hero-stats .stat-item,
+    .year-info-item,
+    .subject-stats-bar .subject-stat-item,
+    .semester-tab,
+    .doc-filter,
+    .doc-card,
+    .resource-card,
+    .subject-card,
+    .search-result-card,
+    .resource-detail-card {
+        border-color: var(--nadjah-gold-line) !important;
+    }
+
+    .level-card,
+    .subject-card,
+    .doc-card,
+    .resource-card {
+        box-shadow:
+            0 0 0 1px rgba(255,215,0,.08),
+            0 8px 22px rgba(0,0,0,.16) !important;
+    }
+
+    .level-card:active,
+    .year-btn:active,
+    .subject-card:active,
+    .doc-card:active,
+    .resource-card:active {
+        transform: scale(.99);
+    }
+}
