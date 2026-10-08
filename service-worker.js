@@ -48,6 +48,12 @@ self.addEventListener('activate', (event) => {
   );
 });
 
+self.addEventListener('message', (event) => {
+  if (event.data?.type === 'SKIP_WAITING') {
+    self.skipWaiting();
+  }
+});
+
 function sameOrigin(request) {
   return new URL(request.url).origin === self.location.origin;
 }
