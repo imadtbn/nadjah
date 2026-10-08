@@ -83,22 +83,40 @@ window.switchSemester = function switchSemester(num) {
 };
 
 window.filterDocs = function filterDocs(type, source) {
-    document.querySelectorAll('.doc-filter').forEach((filter) => filter.classList.remove('active'));
+    const normalizedType = String(type || 'all').trim();
+
+    document.querySelectorAll('.doc-filter').forEach((filter) => {
+        filter.classList.remove('active');
+        filter.setAttribute('aria-pressed', 'false');
+    });
 
     const trigger = source || window.event?.currentTarget;
-    if (trigger?.classList) trigger.classList.add('active');
+    if (trigger?.classList) {
+        trigger.classList.add('active');
+        trigger.setAttribute('aria-pressed', 'true');
+    }
 
-    document.querySelectorAll('.semester-content.active .doc-card').forEach((card) => {
-        const show = type === 'all' || card.dataset.type === type;
-        card.style.display = show ? 'flex' : 'none';
+    const scope = document.querySelector('.semester-content.active') || document;
+    scope.querySelectorAll('.doc-card').forEach((card) => {
+        const cardType = String(card.dataset.type || '').trim();
+        const show = normalizedType === 'all' || cardType === normalizedType;
 
-        if (show && window.gsap && !window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
-            gsap.fromTo(card, { opacity: 0, y: 20 }, {
-                opacity: 1,
-                y: 0,
-                duration: 0.35,
-                ease: 'power3.out'
-            });
+        card.hidden = !show;
+        card.setAttribute('aria-hidden', String(!show));
+
+        if (show) {
+            card.style.removeProperty('display');
+
+            if (window.gsap && !window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+                gsap.killTweensOf(card);
+                gsap.fromTo(card, { opacity: 0, y: 14 }, {
+                    opacity: 1,
+                    y: 0,
+                    duration: 0.28,
+                    ease: 'power2.out',
+                    clearProps: 'opacity,transform'
+                });
+            }
         }
     });
 };
