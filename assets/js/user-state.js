@@ -138,36 +138,79 @@
   function enhanceLegacyCards() {
     document.querySelectorAll('.doc-card[data-resource-id]').forEach((card) => {
       const id = card.dataset.resourceId;
-      const buttons = card.querySelector('.doc-buttons, .doc-actions');
-      if (!id || !buttons) return;
+      if (!id) return;
 
-      card.querySelectorAll('a.doc-download-btn[href]').forEach((link) => {
+      let buttons = card.querySelector('.doc-buttons, .doc-actions');
+      if (!buttons) {
+        buttons = document.createElement('div');
+        buttons.className = 'doc-buttons';
+        card.appendChild(buttons);
+      } else {
+        buttons.classList.add('doc-buttons');
+      }
+
+      card.querySelectorAll('a[href]').forEach((link) => {
+        const text = (link.textContent || '').trim();
+        if (link.classList.contains('resource-detail-link') || /صفحة النموذج|التفاصيل/.test(text)) {
+          link.classList.add('doc-action-detail');
+        } else if (link.classList.contains('doc-preview-btn') || /معاينة|عرض/.test(text)) {
+          link.classList.add('doc-action-preview');
+        } else if (link.classList.contains('doc-download-btn') || /تحميل|PDF/.test(text)) {
+          link.classList.add('doc-action-download');
+        }
+      });
+
+      card.querySelectorAll('a.doc-action-download[href], a.doc-download-btn[href]').forEach((link) => {
         if (link.classList.contains('resource-detail-link')) return;
         link.addEventListener('click', () => trackDownload(id), { once: true });
       });
 
-      if (!buttons.querySelector('.quick-favorite-action')) {
-        const favorite = document.createElement('button');
+      let favorite = buttons.querySelector('.quick-favorite-action');
+      if (!favorite) {
+        favorite = document.createElement('button');
         favorite.type = 'button';
-        favorite.className = 'doc-download-btn quick-favorite-action';
-        const refresh = () => {
-          const active = isFavorite(id);
-          favorite.classList.toggle('active', active);
-          favorite.innerHTML = active
-            ? '<i class="fas fa-heart"></i><span>محفوظ</span>'
-            : '<i class="far fa-heart"></i><span>مفضلة</span>';
-          favorite.setAttribute('aria-pressed', String(active));
-        };
-        refresh();
+        favorite.className = 'doc-download-btn quick-favorite-action doc-action-favorite';
+        buttons.appendChild(favorite);
+      }
+
+      const refresh = () => {
+        const active = isFavorite(id);
+        favorite.classList.toggle('active', active);
+        favorite.innerHTML = active
+          ? '<i class="fas fa-heart"></i><span>محفوظ</span>'
+          : '<i class="far fa-heart"></i><span>مفضلة</span>';
+        favorite.setAttribute('aria-pressed', String(active));
+        favorite.setAttribute('aria-label', active ? 'إزالة من المفضلة' : 'إضافة إلى المفضلة');
+      };
+      refresh();
+
+      if (!favorite.dataset.bound) {
         favorite.addEventListener('click', () => {
           toggleFavorite(id);
           refresh();
         });
-        buttons.appendChild(favorite);
+        favorite.dataset.bound = 'true';
       }
+
+      const ordered = [
+        ...buttons.querySelectorAll('.doc-action-detail, .resource-detail-link'),
+        ...buttons.querySelectorAll('.doc-action-preview, .doc-preview-btn'),
+        ...buttons.querySelectorAll('.doc-action-download'),
+        favorite
+      ];
+
+      const seen = new Set();
+      ordered.forEach((element) => {
+        if (!element || seen.has(element)) return;
+        seen.add(element);
+        buttons.appendChild(element);
+      });
+
+      buttons.querySelectorAll(':scope > *').forEach((element) => {
+        if (!seen.has(element)) buttons.appendChild(element);
+      });
     });
   }
-
   function initResourcePage() {
     enhanceLegacyCards();
 
