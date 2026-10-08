@@ -113,6 +113,13 @@ def main() -> None:
                 if target and not target.startswith("http"):
                     assert (path.parent / target).resolve().exists(), (path, target)
 
+        ads = soup.select(".ad-slot[data-site-ad] ins.adsbygoogle, .ad-banner[data-site-ad] ins.adsbygoogle")
+        assert len(ads) == 2, ("expected exactly two ads", path, len(ads))
+        for ad in ads:
+            assert ad.get("data-ad-client") == "ca-pub-5656416032906373", (path, ad)
+            assert ad.get("data-ad-slot"), (path, ad)
+            assert ad.get("data-full-width-responsive") == "true", (path, ad)
+
         cards = soup.select(".doc-card")
         total_cards += len(cards)
         corrected_cards += sum(
