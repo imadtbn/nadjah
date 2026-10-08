@@ -1461,3 +1461,9 @@
         font-size: 1rem !important;
     }
 }
+
+
+/* Filtering must override every desktop/mobile card layout */
+.doc-card[hidden] {
+    display: none !important;
+}
