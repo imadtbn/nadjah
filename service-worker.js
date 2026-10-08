@@ -1,4 +1,4 @@
-const CACHE_VERSION = 'nadjah-v5';
+const CACHE_VERSION = 'nadjah-v6';
 const STATIC_CACHE = `${CACHE_VERSION}-static`;
 const RUNTIME_CACHE = `${CACHE_VERSION}-runtime`;
 
@@ -69,7 +69,7 @@ self.addEventListener('fetch', (event) => {
 
   if (isHtml(request)) {
     event.respondWith(
-      fetch(request)
+      fetch(request, { cache: 'no-store' })
         .then((response) => {
           if (response.ok) {
             const copy = response.clone();
