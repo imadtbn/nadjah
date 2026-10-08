@@ -40,8 +40,12 @@
     const semester = document.getElementById('semesterFilter');
     const results = document.getElementById('searchResults');
     const summary = document.getElementById('searchSummary');
+    const loadMore = document.getElementById('searchLoadMore');
 
     let allResources = [];
+    let currentResults = [];
+    let visibleCount = 8;
+    const PAGE_SIZE = 8;
 
     function chip(text) {
         const span = document.createElement('span');
@@ -182,7 +186,10 @@
         if (index <= 3) rebuildSemesters(preserve);
     }
 
-    function render(items) {
+    function render(items, { reset = true } = {}) {
+        currentResults = items.slice();
+        if (reset) visibleCount = PAGE_SIZE;
+
         results.innerHTML = '';
         summary.textContent = `${items.length} نتيجة`;
 
@@ -191,10 +198,11 @@
             empty.className = 'search-empty-state';
             empty.textContent = 'لا توجد نتائج بهذه المعايير. جرّب تغيير أحد خيارات الفلترة.';
             results.appendChild(empty);
+            if (loadMore) loadMore.hidden = true;
             return;
         }
 
-        items.slice(0, 120).forEach((item) => {
+        items.slice(0, visibleCount).forEach((item) => {
             const card = document.createElement('a');
             card.className = 'search-result-card';
             card.href = window.NadjahCore.resourceUrl(item.id);
@@ -216,14 +224,14 @@
             results.appendChild(card);
         });
 
-        if (items.length > 120) {
-            const note = document.createElement('div');
-            note.className = 'search-summary';
-            note.textContent = 'تم عرض أول 120 نتيجة. استخدم الفلاتر لتضييق البحث.';
-            results.appendChild(note);
+        if (loadMore) {
+            const remaining = Math.max(0, items.length - visibleCount);
+            loadMore.hidden = remaining === 0;
+            loadMore.innerHTML = remaining
+                ? `<i class="fas fa-plus" aria-hidden="true"></i> إظهار المزيد (${remaining})`
+                : '';
         }
     }
-
     function applyFilters() {
         const query = q.value.trim();
         let items = window.NadjahCore.searchResources(query);
@@ -234,7 +242,7 @@
         if (type.value) items = items.filter((item) => item.type === type.value);
         if (semester.value) items = items.filter((item) => String(item.semester || '') === semester.value);
 
-        render(items);
+        render(items, { reset: true });
     }
 
     function updateUrl() {
@@ -324,6 +332,11 @@
         subject.addEventListener('change', onSubjectChange);
         type.addEventListener('change', onTypeChange);
         semester.addEventListener('change', onSemesterChange);
+
+        loadMore?.addEventListener('click', () => {
+            visibleCount += PAGE_SIZE;
+            render(currentResults, { reset: false });
+        });
 
         updateUrl();
         applyFilters();
