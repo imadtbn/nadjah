@@ -5,6 +5,7 @@ from __future__ import annotations
 
 import json
 from pathlib import Path
+from urllib.parse import unquote, urlsplit
 
 from bs4 import BeautifulSoup
 
@@ -29,6 +30,42 @@ def expected_url(path: Path) -> str:
 
 def load(name: str) -> dict:
     return json.loads((DATA_DIR / name).read_text(encoding="utf-8"))
+
+
+def breadcrumb_target_exists(page: Path, href: str) -> bool:
+    href = (href or "").strip()
+    if not href or href.startswith(("#", "mailto:", "tel:", "javascript:")):
+        return True
+
+    parts = urlsplit(href)
+    if parts.scheme in {"http", "https"}:
+        if not href.startswith(BASE_URL):
+            return True
+        raw_path = unquote(parts.path)
+        prefix = "/nadjah/"
+        if raw_path == "/nadjah":
+            target = ROOT / "index.html"
+        elif raw_path.startswith(prefix):
+            target = ROOT / raw_path[len(prefix):]
+        else:
+            return False
+    else:
+        raw_path = unquote(parts.path).strip()
+        if raw_path.startswith("/nadjah/"):
+            target = ROOT / raw_path[len("/nadjah/"):]
+        elif raw_path.startswith("/"):
+            target = ROOT / raw_path.lstrip("/")
+        else:
+            target = page.parent / raw_path
+
+    target = target.resolve()
+    try:
+        target.relative_to(ROOT)
+    except ValueError:
+        return False
+    if target.is_dir():
+        target = target / "index.html"
+    return target.exists()
 
 
 def normalize_subject_name(value: str) -> str:
@@ -112,6 +149,15 @@ def main() -> None:
                 target = link.get("href", "")
                 if target and not target.startswith("http"):
                     assert (path.parent / target).resolve().exists(), (path, target)
+
+        for crumb_link in soup.select(".breadcrumb a[href]"):
+            href = crumb_link.get("href", "")
+            assert breadcrumb_target_exists(path, href), (
+                "broken breadcrumb link",
+                path,
+                href,
+                crumb_link.get_text(" ", strip=True),
+            )
 
         ads = soup.select(".ad-slot[data-site-ad] ins.adsbygoogle, .ad-banner[data-site-ad] ins.adsbygoogle")
         assert len(ads) == 2, ("expected exactly two ads", path, len(ads))
