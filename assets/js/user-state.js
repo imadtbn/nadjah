@@ -135,8 +135,12 @@
     }
   }
 
-  function enhanceLegacyCards() {
-    document.querySelectorAll('.doc-card[data-resource-id]').forEach((card) => {
+  function enhanceLegacyCards(root = document) {
+    const cards = [];
+    if (root.matches?.('.doc-card[data-resource-id]')) cards.push(root);
+    root.querySelectorAll?.('.doc-card[data-resource-id]').forEach((card) => cards.push(card));
+
+    cards.forEach((card) => {
       const id = card.dataset.resourceId;
       if (!id) return;
 
@@ -161,8 +165,9 @@
       });
 
       card.querySelectorAll('a.doc-action-download[href], a.doc-download-btn[href]').forEach((link) => {
-        if (link.classList.contains('resource-detail-link')) return;
+        if (link.classList.contains('resource-detail-link') || link.dataset.downloadTracked) return;
         link.addEventListener('click', () => trackDownload(id), { once: true });
+        link.dataset.downloadTracked = 'true';
       });
 
       let favorite = buttons.querySelector('.quick-favorite-action');
@@ -211,8 +216,30 @@
       });
     });
   }
+  function observeDynamicCards() {
+    if (!document.body || document.body.dataset.nadjahFavoritesObserver) return;
+    document.body.dataset.nadjahFavoritesObserver = 'true';
+
+    const observer = new MutationObserver((mutations) => {
+      mutations.forEach((mutation) => {
+        mutation.addedNodes.forEach((node) => {
+          if (!(node instanceof Element)) return;
+          if (
+            node.matches('.doc-card[data-resource-id]') ||
+            node.querySelector('.doc-card[data-resource-id]')
+          ) {
+            enhanceLegacyCards(node);
+          }
+        });
+      });
+    });
+
+    observer.observe(document.body, { childList: true, subtree: true });
+  }
+
   function initResourcePage() {
     enhanceLegacyCards();
+    observeDynamicCards();
 
     const main = document.querySelector('main[data-resource-id]');
     if (!main) return;
