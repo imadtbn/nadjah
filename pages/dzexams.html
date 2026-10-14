@@ -138,8 +138,12 @@ if(!subset.length){var empty=document.createElement('p');empty.className='dz-emp
 subset.forEach(function(x){
 var card=document.createElement('article');card.className='dz-card';var h=document.createElement('h3');h.textContent=x.subject+' — '+(levelNames[x.level]||x.level);card.appendChild(h);
 var meta=document.createElement('div');meta.className='dz-meta';[cycleNames[x.cycleId],x.semester?'الفصل '+(['','الأول','الثاني','الثالث'][x.semester]):'موارد عامة',typeNames[x.type],x.branch].filter(Boolean).forEach(function(t){meta.appendChild(chip(t));});card.appendChild(meta);
-var p=document.createElement('p');p.textContent='يعلن المصدر عن '+x.sourceCount+' موردًا في هذه القائمة. حالة التصحيح والتحميل تُفحص لكل نموذج داخل المصدر.';card.appendChild(p);
-var a=document.createElement('a');a.className='dz-action';a.textContent='عرض النماذج في DZExams ↗';a.href=x.sourceUrl;a.target='_blank';a.rel='noopener noreferrer external';card.appendChild(a);root.appendChild(card);
+var p=document.createElement('p');p.textContent='اختر النموذج الملائم داخل المصدر، وتحقق من حالة التصحيح وإمكانية التحميل لكل ملف. الأعداد وروابط الفهارس قد تتغير لدى الناشر.';card.appendChild(p);
+var a=document.createElement('a');a.className='dz-action';a.textContent='عرض النماذج في DZExams ↗';a.href=x.sourceUrl;a.target='_blank';a.rel='noopener noreferrer external';card.appendChild(a);
+var sources={'1ap|اللغة العربية':'1ap/arabe','1am|اللغة العربية':'1am/arabe','1am|الرياضيات':'1am/mathematiques','1as|اللغة العربية':'1as/arabe'};
+var subjectSlug=sources[x.level+'|'+x.subject];
+if(subjectSlug){var fallback=document.createElement('a');fallback.href='https://www.dzexams.com/ar/'+subjectSlug;fallback.target='_blank';fallback.rel='noopener noreferrer external';fallback.textContent='فتح صفحة المادة الأصلية عند تغيّر روابط الأقسام';fallback.style.color='#f0d78c';fallback.style.fontSize='.9rem';fallback.style.textAlign='center';card.appendChild(fallback);}
+root.appendChild(card);
 });}
 function refreshChoices(){
 var cycle=el.cycle.value,priorLevel=el.level.value,priorSubject=el.subject.value;
