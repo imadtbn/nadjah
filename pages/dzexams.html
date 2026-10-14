@@ -153,6 +153,13 @@ el.cycle.addEventListener('change',refreshChoices);el.level.addEventListener('ch
 fetch('../assets/data/dzexams-sources.json').then(function(res){if(!res.ok)throw new Error('HTTP '+res.status);return res.json();}).then(function(payload){
 data=(payload.collections||[]).filter(function(x){try{var u=new URL(x.sourceUrl);return u.protocol==='https:'&&u.hostname==='www.dzexams.com'&&x.sourceCount>0;}catch(e){return false;}});
 refreshChoices();
+var params=new URLSearchParams(window.location.search);
+if(params.has('cycle')){el.cycle.value=params.get('cycle');refreshChoices();}
+if(params.has('level')){el.level.value=params.get('level');refreshChoices();}
+if(params.has('subject')){el.subject.value=params.get('subject');}
+if(params.has('semester')){el.semester.value=params.get('semester');}
+if(params.has('kind')){el.kind.value=params.get('kind');}
+draw();
 }).catch(function(){count.textContent='تعذر تحميل المصادر';root.replaceChildren();var p=document.createElement('p');p.className='dz-empty';p.textContent='تعذر تحميل الفهرس حاليًا. حاول تحديث الصفحة.';root.appendChild(p);});
 })();
 </script>
