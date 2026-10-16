@@ -115,8 +115,8 @@
     width: min(calc(100% - 2rem), 970px) !important;
     max-width: 970px;
     min-width: 0;
-    contain: layout paint;
-    overflow: clip;
+    contain: layout;
+    overflow: visible;
 }
 
 .ad-slot--in-article {
@@ -180,5 +180,42 @@
         width: calc(100% - .6rem) !important;
         border-radius: 12px;
         padding-inline: .2rem !important;
+    }
+}
+
+/* Reserve ad space before AdSense measures a slot to limit late layout shifts.
+   Ads stay in normal document flow, outside navigation and hero sections. */
+.ad-slot,
+.ad-banner {
+    min-height: 220px;
+    overflow: visible;
+}
+.ad-slot--in-article {
+    min-height: 240px;
+}
+.ad-slot--display {
+    min-height: 220px;
+}
+.ad-banner {
+    min-height: 200px;
+}
+.ad-slot > ins.adsbygoogle,
+.ad-banner > ins.adsbygoogle {
+    display: block;
+    width: 100%;
+    min-height: 180px;
+}
+@media (max-width: 768px) {
+    .ad-slot,
+    .ad-banner,
+    .ad-slot--display {
+        min-height: 190px;
+    }
+    .ad-slot--in-article {
+        min-height: 210px;
+    }
+    .ad-slot > ins.adsbygoogle,
+    .ad-banner > ins.adsbygoogle {
+        min-height: 160px;
     }
 }
