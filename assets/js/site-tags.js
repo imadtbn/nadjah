@@ -100,9 +100,15 @@
     });
   };
 
+  // Only request manually placed ads inside approved content containers.
+  // Auto ads / ad intents must be configured in AdSense, not hidden after rendering.
+  const manualAdUnits = () => Array.from(
+    document.querySelectorAll('.ad-slot > ins.adsbygoogle, .ad-banner > ins.adsbygoogle')
+  ).filter((unit) => !unit.closest('header, nav, .header, .nav-links, .nadjah-mobile-nav, .hero'));
+
   const queueAds = () => {
     window.adsbygoogle = window.adsbygoogle || [];
-    document.querySelectorAll('ins.adsbygoogle').forEach((unit) => {
+    manualAdUnits().forEach((unit) => {
       if (unit.hasAttribute('data-adsbygoogle-status') || unit.hasAttribute('data-site-tag-queued')) return;
       unit.setAttribute('data-site-tag-queued', 'true');
       try {
@@ -116,7 +122,7 @@
 
   const loadAdsense = () => {
     if (!isConfigured(config.adsenseClient) || state.adsense) return;
-    if (!document.querySelector('ins.adsbygoogle')) return;
+    if (!manualAdUnits().length) return;
 
     state.adsense = true;
     const src = `https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=${encodeURIComponent(config.adsenseClient)}`;
