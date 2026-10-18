@@ -1,0 +1,23 @@
+{
+  "folders_created": 0,
+  "shortcuts_created": 710,
+  "shortcuts_existing": 3159,
+  "errors": [
+    {
+      "target": "1PAIsmC7XgGO5GwaDv1m0OnxHBg93Sk06",
+      "error": "error[api]: File not found: 1PAIsmC7XgGO5GwaDv1m0OnxHBg93Sk06.\n"
+    },
+    {
+      "target": "1NJDvbBww0iiB-WhT4ZqSrY5gsjMHW6vN",
+      "error": "error[api]: File not found: 1NJDvbBww0iiB-WhT4ZqSrY5gsjMHW6vN.\n"
+    },
+    {
+      "target": "1KPjz669XYaY42_eWR05K2q_4pLueftU8",
+      "error": "error[api]: File not found: 1KPjz669XYaY42_eWR05K2q_4pLueftU8.\n"
+    }
+  ],
+  "groups": 166,
+  "requested_per_group": 45,
+  "total_shortcuts_after_run": 3869,
+  "updated_at": "2026-10-18T09:15:57.776182+00:00"
+}
