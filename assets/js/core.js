@@ -892,6 +892,11 @@
         initPwa();
         initLenisAndGsap();
         initStatistics();
+        const pdfLibraryScript = document.createElement('script');
+        pdfLibraryScript.src = new URL('pdf-library.js', coreBaseUrl).href;
+        pdfLibraryScript.defer = true;
+        pdfLibraryScript.dataset.pdfLibrary = 'true';
+        document.head.appendChild(pdfLibraryScript);
         initCustomCursor();
         initStarfield();
         initSmoothAnchors();
