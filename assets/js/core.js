@@ -19,31 +19,84 @@
     const state = {
         initialized: false,
         lenis: null,
-        data: null
+        data: null,
+        dataReady: null,
+        resourceReady: null,
+        statsReady: null
     };
 
-    function loadCentralData() {
-        const names = ['levels', 'subjects', 'branches', 'resources'];
-        const requests = names.map((name) => {
-            const url = new URL(`../data/${name}.json`, coreBaseUrl).href;
-            return fetch(url, { cache: 'no-store' }).then((response) => {
+    const jsonRequests = new Map();
+
+    function loadJson(name) {
+        if (jsonRequests.has(name)) return jsonRequests.get(name);
+
+        const url = new URL(`../data/${name}.json`, coreBaseUrl).href;
+        const request = fetch(url, { cache: 'default' })
+            .then((response) => {
                 if (!response.ok) throw new Error(`${name}.json: ${response.status}`);
                 return response.json();
+            })
+            .catch((error) => {
+                jsonRequests.delete(name);
+                throw error;
             });
-        });
 
-        return Promise.all(requests)
-            .then(([levels, subjects, branches, resources]) => {
-                state.data = { levels, subjects, branches, resources };
+        jsonRequests.set(name, request);
+        return request;
+    }
+
+    function loadCentralData() {
+        return Promise.all(['levels', 'subjects', 'branches'].map(loadJson))
+            .then(([levels, subjects, branches]) => {
+                state.data = { ...(state.data || {}), levels, subjects, branches };
                 document.dispatchEvent(new CustomEvent('nadjah:data-ready', {
                     detail: state.data
                 }));
                 return state.data;
             })
             .catch((error) => {
-                console.warn('تعذر تحميل قاعدة بيانات منصة النجاح:', error);
+                console.warn('تعذر تحميل بيانات التصفح في منصة النجاح:', error);
                 return null;
             });
+    }
+
+    function loadResources() {
+        if (state.data?.resources) return Promise.resolve(state.data);
+        if (state.resourceReady) return state.resourceReady;
+
+        state.resourceReady = loadJson('resources')
+            .then((resources) => {
+                state.data = { ...(state.data || {}), resources };
+                document.dispatchEvent(new CustomEvent('nadjah:resources-ready', {
+                    detail: state.data
+                }));
+                return state.data;
+            })
+            .catch((error) => {
+                state.resourceReady = null;
+                console.warn('تعذر تحميل فهرس النماذج:', error);
+                return null;
+            });
+
+        return state.resourceReady;
+    }
+
+    function loadStatistics() {
+        if (state.data?.stats) return Promise.resolve(state.data.stats);
+        if (state.statsReady) return state.statsReady;
+
+        state.statsReady = loadJson('site-stats')
+            .then((stats) => {
+                state.data = { ...(state.data || {}), stats };
+                return stats;
+            })
+            .catch((error) => {
+                state.statsReady = null;
+                console.warn('تعذر تحميل إحصائيات الموقع:', error);
+                return null;
+            });
+
+        return state.statsReady;
     }
 
     const safeQuery = (selector) => document.querySelector(selector);
@@ -59,34 +112,43 @@
     function initLenisAndGsap() {
         const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
         const mobileLike = window.matchMedia('(max-width: 768px), (pointer: coarse)').matches;
-
-        if (!window.gsap || !window.ScrollTrigger) return;
-
-        gsap.registerPlugin(ScrollTrigger);
-
-        if (reduceMotion || mobileLike || !window.Lenis) {
-            document.documentElement.style.scrollBehavior = 'smooth';
-            document.querySelectorAll('.reveal').forEach((el) => {
-                el.style.opacity = '1';
-                el.style.transform = 'none';
+        const revealElements = document.querySelectorAll('.reveal');
+        const showReveals = () => {
+            revealElements.forEach((element) => {
+                element.style.opacity = '1';
+                element.style.transform = 'none';
             });
+        };
+
+        if (!window.gsap || !window.ScrollTrigger) {
+            showReveals();
             return;
         }
 
-        const lenis = new Lenis({
-            duration: 1.2,
-            easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
-            smooth: true
-        });
-        state.lenis = lenis;
+        gsap.registerPlugin(ScrollTrigger);
 
-        lenis.on('scroll', ScrollTrigger.update);
+        if (reduceMotion || mobileLike) {
+            document.documentElement.style.scrollBehavior = 'smooth';
+            showReveals();
+            return;
+        }
 
-        const raf = (time) => {
-            lenis.raf(time);
+        if (window.Lenis) {
+            const lenis = new Lenis({
+                duration: 1.2,
+                easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
+                smooth: true
+            });
+            state.lenis = lenis;
+
+            lenis.on('scroll', ScrollTrigger.update);
+
+            const raf = (time) => {
+                lenis.raf(time);
+                requestAnimationFrame(raf);
+            };
             requestAnimationFrame(raf);
-        };
-        requestAnimationFrame(raf);
+        }
 
         ScrollTrigger.create({
             start: 'top -100',
@@ -97,7 +159,7 @@
             }
         });
 
-        document.querySelectorAll('.reveal').forEach((el) => {
+        revealElements.forEach((el) => {
             gsap.fromTo(el, {
                 opacity: 0,
                 y: 50
@@ -116,44 +178,40 @@
     }
 
     function initStatistics() {
-        const statsUrl = new URL('../data/site-stats.json', coreBaseUrl).href;
+        if (!document.querySelector('[data-stat-key]')) return;
 
-        fetch(statsUrl, { cache: 'no-store' })
-            .then((response) => {
-                if (!response.ok) throw new Error(`Statistics request failed: ${response.status}`);
-                return response.json();
-            })
-            .then((stats) => {
-                const values = {
-                    resources: stats.resources,
-                    levels: stats.levels,
-                    subjects: stats.subjects,
-                    correctedResources: stats.correctedResources,
-                    correctionRate: stats.correctionRate
-                };
+        loadStatistics().then((stats) => {
+            if (!stats) return;
 
-                document.querySelectorAll('[data-stat-key]').forEach((element) => {
-                    const target = Number(values[element.dataset.statKey]);
-                    if (!Number.isFinite(target)) return;
-                    element.textContent = String(target);
+            const values = {
+                resources: stats.resources,
+                levels: stats.levels,
+                subjects: stats.subjects,
+                correctedResources: stats.correctedResources,
+                correctionRate: stats.correctionRate
+            };
 
-                    if (window.gsap && !window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
-                        const counter = { value: 0 };
-                        gsap.to(counter, {
-                            value: target,
-                            duration: 1.1,
-                            ease: 'power2.out',
-                            onUpdate: () => {
-                                element.textContent = String(Math.round(counter.value));
-                            },
-                            onComplete: () => {
-                                element.textContent = String(target);
-                            }
-                        });
-                    }
-                });
-            })
-            .catch((error) => console.warn('تعذر تحميل إحصائيات الموقع الديناميكية:', error));
+            document.querySelectorAll('[data-stat-key]').forEach((element) => {
+                const target = Number(values[element.dataset.statKey]);
+                if (!Number.isFinite(target)) return;
+                element.textContent = String(target);
+
+                if (window.gsap && !window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+                    const counter = { value: 0 };
+                    gsap.to(counter, {
+                        value: target,
+                        duration: 1.1,
+                        ease: 'power2.out',
+                        onUpdate: () => {
+                            element.textContent = String(Math.round(counter.value));
+                        },
+                        onComplete: () => {
+                            element.textContent = String(target);
+                        }
+                    });
+                }
+            });
+        });
     }
 
     function initCustomCursor() {
@@ -392,14 +450,24 @@
             searchBox.setAttribute('aria-expanded', 'true');
         };
 
-        const render = (query) => {
-            const data = state.data?.resources?.resources || [];
+        const render = (query, catalog = state.data?.resources) => {
             const normalized = normalizeArabic(query);
             if (!normalized) {
                 closeResults();
                 return;
             }
 
+            if (!catalog) {
+                results.innerHTML = '';
+                const failed = document.createElement('div');
+                failed.className = 'nadjah-search-empty';
+                failed.textContent = 'تعذر تحميل نتائج البحث. حاول مرة أخرى.';
+                results.appendChild(failed);
+                openResults();
+                return;
+            }
+
+            const data = catalog.resources || [];
             const tokens = normalized.split(' ').filter(Boolean);
             const ranked = data
                 .map((item) => {
@@ -452,7 +520,17 @@
             openResults();
         };
 
-        searchBox.addEventListener('input', (event) => render(event.target.value));
+        searchBox.addEventListener('input', (event) => {
+            const query = event.target.value;
+            if (!normalizeArabic(query)) {
+                closeResults();
+                return;
+            }
+
+            loadResources().then((data) => {
+                if (searchBox.value === query) render(query, data?.resources);
+            });
+        });
 
         searchBox.addEventListener('keydown', (event) => {
             if (event.key === 'Enter') {
@@ -490,7 +568,12 @@
         });
 
         state.dataReady?.then(() => {
-            if (searchBox.value.trim()) render(searchBox.value);
+            const query = searchBox.value.trim();
+            if (query) {
+                loadResources().then((data) => {
+                    if (searchBox.value.trim() === query) render(query, data?.resources);
+                });
+            }
         });
     }
 
@@ -731,6 +814,8 @@
         get lenis() { return state.lenis; },
         get data() { return state.data; },
         get dataReady() { return state.dataReady; },
+        loadResources,
+        loadStatistics,
         findResource(id) {
             return state.data?.resources?.resources?.find((item) => item.id === id) || null;
         },

@@ -158,6 +158,36 @@ def main() -> None:
             path,
         )
 
+        external_scripts = [
+            tag.get("src", "") for tag in soup.find_all("script", src=True)
+        ]
+        has_shader = soup.select_one("#shader-canvas") is not None
+        inline_scripts = "\n".join(
+            tag.get_text(" ", strip=False)
+            for tag in soup.find_all("script")
+            if not tag.get("src")
+        )
+        needs_gsap = bool(soup.select_one(
+            "#shader-canvas, .reveal, [data-stat-key], .hero-content, .semester-tab"
+        )) or any(token in inline_scripts for token in ("gsap", "ScrollTrigger"))
+        needs_lenis = has_shader or "Lenis" in inline_scripts
+
+        if not has_shader:
+            assert not any("three.min.js" in src for src in external_scripts), (
+                "Three.js should only load on pages with a shader canvas",
+                path,
+            )
+        if not needs_gsap:
+            assert not any(
+                name in src for src in external_scripts
+                for name in ("gsap.min.js", "ScrollTrigger.min.js")
+            ), ("unneeded GSAP libraries found", path)
+        if not needs_lenis:
+            assert not any("lenis.min.js" in src for src in external_scripts), (
+                "Lenis should only load where smooth-scroll animation is needed",
+                path,
+            )
+
         canonical = soup.find("link", rel="canonical")
         assert canonical and canonical.get("href") == expected_url(path), (path, canonical)
         assert len(soup.find_all("meta", attrs={"property": "og:url"})) == 1, path
@@ -258,6 +288,17 @@ def main() -> None:
     assert (ROOT / "offline.html").exists()
     sw = (ROOT / "service-worker.js").read_text(encoding="utf-8")
     assert "offline.html" in sw and "APP_SHELL" in sw
+    app_shell = sw.split("const APP_SHELL = [", 1)[1].split("];", 1)[0]
+    assert "./assets/data/resources.json" not in app_shell, (
+        "large resources catalog must load on demand, not during service-worker install"
+    )
+
+    core_js = (ROOT / "assets" / "js" / "core.js").read_text(encoding="utf-8")
+    assert "function loadResources()" in core_js, "missing on-demand resource loader"
+    assert "function loadStatistics()" in core_js, "missing deferred statistics loader"
+    assert "['levels', 'subjects', 'branches'].map(loadJson)" in core_js, (
+        "initial data load should exclude the large resources catalog"
+    )
 
     print(
         f"Validation passed: {len(pages)} pages, "

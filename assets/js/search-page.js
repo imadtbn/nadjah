@@ -15,19 +15,42 @@
     };
 
     function waitForCore() {
-        if (window.NadjahCore?.dataReady) return window.NadjahCore.dataReady;
+        const loadResources = () => {
+            const core = window.NadjahCore;
+            return core?.loadResources ? core.loadResources() : Promise.resolve(null);
+        };
+
+        if (window.NadjahCore?.dataReady) {
+            return window.NadjahCore.dataReady.then(loadResources);
+        }
+
         return new Promise((resolve) => {
-            const onReady = () => resolve(window.NadjahCore?.data || null);
-            document.addEventListener('nadjah:data-ready', onReady, { once: true });
-            const timer = setInterval(() => {
-                if (window.NadjahCore?.dataReady) {
-                    clearInterval(timer);
-                    window.NadjahCore.dataReady.then(resolve);
+            let timer = null;
+            let timeout = null;
+
+            const finish = () => {
+                if (timer) clearInterval(timer);
+                if (timeout) clearTimeout(timeout);
+                const core = window.NadjahCore;
+                if (!core?.dataReady) {
+                    resolve(null);
+                    return;
                 }
+                core.dataReady
+                    .then(() => core.loadResources())
+                    .then(resolve)
+                    .catch(() => resolve(null));
+            };
+
+            document.addEventListener('nadjah:data-ready', finish, { once: true });
+
+            timer = setInterval(() => {
+                if (window.NadjahCore?.dataReady) finish();
             }, 50);
-            setTimeout(() => {
-                clearInterval(timer);
-                resolve(window.NadjahCore?.data || null);
+
+            timeout = setTimeout(() => {
+                if (timer) clearInterval(timer);
+                resolve(null);
             }, 5000);
         });
     }

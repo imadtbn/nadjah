@@ -3,20 +3,41 @@
 
   function waitForReady() {
     return new Promise((resolve) => {
-      const done = () => {
-        if (window.NadjahCore?.data && window.NadjahUser) resolve(window.NadjahCore.data);
+      let userTimer = null;
+
+      const finish = () => {
+        const core = window.NadjahCore;
+        if (!core?.loadResources) {
+          resolve(null);
+          return;
+        }
+
+        core.loadResources()
+          .then((data) => resolve(data?.resources ? data : null))
+          .catch(() => resolve(null));
       };
+
+      const waitForUser = () => {
+        if (window.NadjahUser) {
+          if (userTimer) clearInterval(userTimer);
+          finish();
+          return;
+        }
+        if (!userTimer) {
+          userTimer = setInterval(waitForUser, 40);
+        }
+      };
+
+      const start = () => {
+        const core = window.NadjahCore;
+        if (!core?.dataReady) return;
+        core.dataReady.then(waitForUser).catch(() => waitForUser());
+      };
+
       if (window.NadjahCore?.dataReady) {
-        window.NadjahCore.dataReady.then(() => {
-          if (window.NadjahUser) resolve(window.NadjahCore.data);
-          else {
-            const timer = setInterval(() => {
-              if (window.NadjahUser) { clearInterval(timer); resolve(window.NadjahCore.data); }
-            }, 40);
-          }
-        });
+        start();
       } else {
-        document.addEventListener('nadjah:data-ready', done, { once: true });
+        document.addEventListener('nadjah:data-ready', start, { once: true });
       }
     });
   }
@@ -63,6 +84,15 @@
   }
 
   waitForReady().then((data) => {
+    if (!data?.resources?.resources) {
+      const message = 'تعذر تحميل فهرس النماذج. تحقق من الاتصال ثم أعد فتح الصفحة.';
+      ['favoritesGrid', 'recentGrid', 'viewsGrid', 'downloadsGrid', 'recommendationsGrid'].forEach((name) => {
+        const target = ids(name);
+        if (target) empty(target, message);
+      });
+      return;
+    }
+
     const resources = data.resources.resources || [];
     const map = new Map(resources.map((item) => [item.id, item]));
     const cycle = ids('prefCycle');
