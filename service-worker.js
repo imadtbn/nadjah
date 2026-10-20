@@ -1,4 +1,4 @@
-const CACHE_VERSION = 'nadjah-v7';
+const CACHE_VERSION = 'nadjah-v8';
 const STATIC_CACHE = `${CACHE_VERSION}-static`;
 const RUNTIME_CACHE = `${CACHE_VERSION}-runtime`;
 
@@ -13,7 +13,10 @@ const APP_SHELL = [
   './offline.html',
   './site.webmanifest',
   './assets/css/style-main.css',
+  './assets/css/style-main2.css',
   './assets/css/style-global.css',
+  './assets/css/legal.css',
+  './assets/css/ads.css',
   './assets/css/ux.css',
   './assets/js/core.js',
   './assets/js/main.js',
@@ -92,10 +95,14 @@ self.addEventListener('fetch', (event) => {
   if (isHtml(request)) {
     event.respondWith(
       fetch(request, { cache: 'no-store' })
-        .then((response) => {
+        .then(async (response) => {
           if (response.ok) {
-            const copy = response.clone();
-            caches.open(RUNTIME_CACHE).then((cache) => cache.put(request, copy));
+            try {
+              const cache = await caches.open(RUNTIME_CACHE);
+              await cache.put(request, response.clone());
+            } catch (error) {
+              // A cache quota or storage error must not block a successful network response.
+            }
           }
           return response;
         })
@@ -111,7 +118,7 @@ self.addEventListener('fetch', (event) => {
   const isJson = /\.json$/i.test(url.pathname);
   const isCssOrJs = /\.(?:css|js)$/i.test(url.pathname);
   const isVersionedAsset = isCssOrJs && url.searchParams.has('v');
-  const isCacheFirstAsset = /\.(?:png|jpg|jpeg|webp|svg|woff2?)$/i.test(url.pathname);
+  const isCacheFirstAsset = /\.(?:png|jpe?g|webp|avif|gif|svg|ico|woff2?|ttf|otf)$/i.test(url.pathname);
 
   // JSON and content-versioned CSS/JS use stale-while-revalidate:
   // render from cache immediately, while refreshing the same URL in the background.
@@ -139,10 +146,14 @@ self.addEventListener('fetch', (event) => {
   if (isCssOrJs) {
     event.respondWith(
       fetch(request, { cache: 'no-store' })
-        .then((response) => {
+        .then(async (response) => {
           if (response.ok) {
-            const copy = response.clone();
-            caches.open(RUNTIME_CACHE).then((cache) => cache.put(request, copy));
+            try {
+              const cache = await caches.open(RUNTIME_CACHE);
+              await cache.put(request, response.clone());
+            } catch (error) {
+              // A cache quota or storage error must not block a successful network response.
+            }
           }
           return response;
         })
@@ -157,10 +168,14 @@ self.addEventListener('fetch', (event) => {
     event.respondWith(
       caches.match(request).then((cached) => {
         if (cached) return cached;
-        return fetch(request).then((response) => {
+        return fetch(request).then(async (response) => {
           if (response.ok) {
-            const copy = response.clone();
-            caches.open(RUNTIME_CACHE).then((cache) => cache.put(request, copy));
+            try {
+              const cache = await caches.open(RUNTIME_CACHE);
+              await cache.put(request, response.clone());
+            } catch (error) {
+              // Keep the fetched asset usable even when browser storage is unavailable.
+            }
           }
           return response;
         })
