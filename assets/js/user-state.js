@@ -5,6 +5,8 @@
 
   const KEY = 'nadjah:user:v1';
   const MAX_RECENT = 30;
+  let volatileState = blank();
+  let volatileMode = false;
 
   function blank() {
     return {
@@ -21,19 +23,93 @@
     };
   }
 
+  function cleanIds(value, limit = Infinity) {
+    if (!Array.isArray(value)) return [];
+    return [...new Set(value.filter((id) => typeof id === 'string' && id.trim()))].slice(0, limit);
+  }
+
+  function cleanCounts(value) {
+    if (!value || typeof value !== 'object' || Array.isArray(value)) return {};
+    return Object.fromEntries(
+      Object.entries(value)
+        .filter(([id, count]) => id && Number.isFinite(Number(count)) && Number(count) > 0)
+        .map(([id, count]) => [id, Math.floor(Number(count))])
+    );
+  }
+
+  function normalizeState(value) {
+    const source = value && typeof value === 'object' && !Array.isArray(value) ? value : {};
+    const base = blank();
+    const preferences = source.preferences && typeof source.preferences === 'object'
+      ? source.preferences
+      : {};
+    return {
+      favorites: cleanIds(source.favorites),
+      recent: cleanIds(source.recent, MAX_RECENT),
+      views: cleanCounts(source.views),
+      downloads: cleanCounts(source.downloads),
+      preferences: {
+        cycleId: typeof preferences.cycleId === 'string' ? preferences.cycleId : base.preferences.cycleId,
+        levelLabel: typeof preferences.levelLabel === 'string' ? preferences.levelLabel : base.preferences.levelLabel,
+        subject: typeof preferences.subject === 'string' ? preferences.subject : base.preferences.subject,
+        semester: typeof preferences.semester === 'string' || typeof preferences.semester === 'number'
+          ? String(preferences.semester)
+          : base.preferences.semester
+      }
+    };
+  }
+
   function load() {
+    if (volatileMode) return normalizeState(volatileState);
     try {
-      const parsed = JSON.parse(localStorage.getItem(KEY) || 'null');
-      return Object.assign(blank(), parsed || {});
+      const raw = window.localStorage.getItem(KEY);
+      return raw ? normalizeState(JSON.parse(raw)) : blank();
     } catch {
-      return blank();
+      volatileMode = true;
+      return normalizeState(volatileState);
     }
   }
 
-  function save(state) {
-    localStorage.setItem(KEY, JSON.stringify(state));
+  function publish(state) {
     document.dispatchEvent(new CustomEvent('nadjah:user-state', { detail: state }));
-    return state;
+  }
+
+  function save(state) {
+    const normalized = normalizeState(state);
+    volatileState = normalized;
+    try {
+      window.localStorage.setItem(KEY, JSON.stringify(normalized));
+      volatileMode = false;
+    } catch {
+      volatileMode = true;
+    }
+    publish(normalized);
+    return normalized;
+  }
+
+  function reset() {
+    volatileState = blank();
+    try {
+      window.localStorage.removeItem(KEY);
+      volatileMode = false;
+    } catch {
+      volatileMode = true;
+    }
+    publish(normalizeState(volatileState));
+    return normalizeState(volatileState);
+  }
+
+  function clearRecent() {
+    const state = load();
+    state.recent = [];
+    return save(state);
+  }
+
+  function clearMetrics() {
+    const state = load();
+    state.views = {};
+    state.downloads = {};
+    return save(state);
   }
 
   function touchRecent(id) {
@@ -67,13 +143,24 @@
 
   function setPreferences(next) {
     const state = load();
-    state.preferences = { ...state.preferences, ...next };
+    state.preferences = { ...state.preferences, ...(next || {}) };
     save(state);
     return state.preferences;
   }
 
   function getPreferences() {
     return load().preferences;
+  }
+
+  function isPersistent() {
+    if (volatileMode) return false;
+    try {
+      window.localStorage.getItem(KEY);
+      return true;
+    } catch {
+      volatileMode = true;
+      return false;
+    }
   }
 
   function topIds(map, limit = 10) {
@@ -120,16 +207,43 @@
   }
 
   async function shareResource(item) {
-    const url = window.NadjahCore?.resourceUrl ? window.NadjahCore.resourceUrl(item.id) : location.href;
-    const payload = { title: item.title, text: item.title, url };
+    if (!item?.id) return false;
+    const url = window.NadjahCore?.resourceUrl
+      ? window.NadjahCore.resourceUrl(item.id)
+      : window.location.href;
+    const payload = { title: item.title || 'منصة النجاح', text: item.title || 'مورد تعليمي', url };
+
     if (navigator.share) {
-      try { await navigator.share(payload); return true; } catch (e) {
-        if (e?.name === 'AbortError') return false;
+      try {
+        await navigator.share(payload);
+        return 'shared';
+      } catch (error) {
+        if (error?.name === 'AbortError') return false;
       }
     }
+
     try {
-      await navigator.clipboard.writeText(url);
-      return true;
+      if (navigator.clipboard?.writeText) {
+        await navigator.clipboard.writeText(url);
+        return 'copied';
+      }
+    } catch {
+      // Try the compatible text-selection fallback below.
+    }
+
+    try {
+      const textarea = document.createElement('textarea');
+      textarea.value = url;
+      textarea.setAttribute('readonly', '');
+      textarea.style.position = 'fixed';
+      textarea.style.opacity = '0';
+      textarea.style.pointerEvents = 'none';
+      document.body.appendChild(textarea);
+      textarea.select();
+      textarea.setSelectionRange(0, textarea.value.length);
+      const copied = document.execCommand('copy');
+      textarea.remove();
+      return copied ? 'copied' : false;
     } catch {
       return false;
     }
@@ -166,7 +280,7 @@
 
       card.querySelectorAll('a.doc-action-download[href], a.doc-download-btn[href]').forEach((link) => {
         if (link.classList.contains('resource-detail-link') || link.dataset.downloadTracked) return;
-        link.addEventListener('click', () => trackDownload(id), { once: true });
+        link.addEventListener('click', () => trackDownload(id));
         link.dataset.downloadTracked = 'true';
       });
 
@@ -182,19 +296,21 @@
         const active = isFavorite(id);
         favorite.classList.toggle('active', active);
         favorite.innerHTML = active
-          ? '<i class="fas fa-heart"></i><span>محفوظ</span>'
-          : '<i class="far fa-heart"></i><span>مفضلة</span>';
+          ? '<i class="fas fa-heart" aria-hidden="true"></i><span>محفوظ</span>'
+          : '<i class="far fa-heart" aria-hidden="true"></i><span>مفضلة</span>';
         favorite.setAttribute('aria-pressed', String(active));
         favorite.setAttribute('aria-label', active ? 'إزالة من المفضلة' : 'إضافة إلى المفضلة');
       };
       refresh();
 
       if (!favorite.dataset.bound) {
-        favorite.addEventListener('click', () => {
-          toggleFavorite(id);
-          refresh();
-        });
+        favorite.addEventListener('click', () => toggleFavorite(id));
         favorite.dataset.bound = 'true';
+      }
+
+      if (!favorite.dataset.refreshBound) {
+        document.addEventListener('nadjah:user-state', refresh);
+        favorite.dataset.refreshBound = 'true';
       }
 
       const ordered = [
@@ -216,6 +332,7 @@
       });
     });
   }
+
   function observeDynamicCards() {
     if (!document.body || document.body.dataset.nadjahFavoritesObserver) return;
     document.body.dataset.nadjahFavoritesObserver = 'true';
@@ -258,41 +375,54 @@
       const active = isFavorite(id);
       favorite.classList.toggle('active', active);
       favorite.innerHTML = active
-        ? '<i class="fas fa-heart"></i> محفوظ في المفضلة'
-        : '<i class="far fa-heart"></i> إضافة للمفضلة';
+        ? '<i class="fas fa-heart" aria-hidden="true"></i> محفوظ في المفضلة'
+        : '<i class="far fa-heart" aria-hidden="true"></i> إضافة للمفضلة';
       favorite.setAttribute('aria-pressed', String(active));
     };
     updateFav();
 
-    favorite.addEventListener('click', () => {
-      toggleFavorite(id);
-      updateFav();
-    });
+    favorite.addEventListener('click', () => toggleFavorite(id));
+    document.addEventListener('nadjah:user-state', updateFav);
 
     const share = document.createElement('button');
     share.type = 'button';
     share.className = 'resource-action user-action';
-    share.innerHTML = '<i class="fas fa-share-nodes"></i> مشاركة';
+    share.innerHTML = '<i class="fas fa-share-nodes" aria-hidden="true"></i> مشاركة';
     share.addEventListener('click', async () => {
       const item = window.NadjahCore?.findResource?.(id);
-      if (!item) return;
-      const ok = await shareResource(item);
-      if (ok && !navigator.share) {
-        share.innerHTML = '<i class="fas fa-check"></i> تم نسخ الرابط';
-        setTimeout(() => { share.innerHTML = '<i class="fas fa-share-nodes"></i> مشاركة'; }, 1600);
+      if (!item) {
+        share.textContent = 'تعذر تحميل بيانات النموذج';
+        return;
       }
+      const result = await shareResource(item);
+      if (result === 'shared') {
+        share.innerHTML = '<i class="fas fa-check" aria-hidden="true"></i> تمت المشاركة';
+      } else if (result === 'copied') {
+        share.innerHTML = '<i class="fas fa-check" aria-hidden="true"></i> تم نسخ الرابط';
+      } else {
+        share.innerHTML = '<i class="fas fa-share-nodes" aria-hidden="true"></i> مشاركة';
+        return;
+      }
+      window.setTimeout(() => {
+        share.innerHTML = '<i class="fas fa-share-nodes" aria-hidden="true"></i> مشاركة';
+      }, 1800);
     });
 
     actions.append(favorite, share);
 
     document.querySelectorAll('.resource-action.primary[href], a.doc-download-btn[href]').forEach((link) => {
-      link.addEventListener('click', () => trackDownload(id), { once: true });
+      if (link.dataset.downloadTracked) return;
+      link.addEventListener('click', () => trackDownload(id));
+      link.dataset.downloadTracked = 'true';
     });
   }
 
   window.NadjahUser = {
     load,
     save,
+    reset,
+    clearRecent,
+    clearMetrics,
     toggleFavorite,
     isFavorite,
     trackDownload,
@@ -300,9 +430,10 @@
     setPreferences,
     getPreferences,
     recommendations,
-    topViewed(limit = 10) { const s = load(); return topIds(s.views, limit); },
-    topDownloaded(limit = 10) { const s = load(); return topIds(s.downloads, limit); },
-    shareResource
+    topViewed(limit = 10) { const state = load(); return topIds(state.views, limit); },
+    topDownloaded(limit = 10) { const state = load(); return topIds(state.downloads, limit); },
+    shareResource,
+    isPersistent
   };
 
   if (document.readyState === 'loading') {
