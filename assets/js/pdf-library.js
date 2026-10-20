@@ -36,5 +36,40 @@ function detail(items,previews,downloads){const main=document.querySelector('mai
  const pa=actions.querySelector('a[href*="/preview"]');if(pa&&!p){pa.removeAttribute('href');pa.removeAttribute('target');pa.setAttribute('aria-disabled','true');pa.innerHTML='<i class="fas fa-eye" aria-hidden="true"></i> المعاينة غير متاحة حاليًا';}else if(pa&&p){pa.href=p;pa.target='_blank';pa.rel='noopener';}}
  const frame=main.querySelector('.resource-preview-frame iframe');if(frame&&!p){const wrap=frame.closest('.resource-preview-frame');if(wrap)wrap.innerHTML='<p class="resource-file-notice">لا تتوفر معاينة PDF صالحة لهذا الموضوع حاليًا. ستظهر المعاينة عند إضافة رابط مستقل إلى فهرس المكتبة.</p>';}else if(frame&&p){frame.src=p;}
 }
-fetch(new URL('assets/data/resources.json',root).href,{cache:'no-cache'}).then(r=>{if(!r.ok)throw new Error('HTTP '+r.status);return r.json();}).then(data=>{const items=Array.isArray(data.resources)?data.resources:[];if(!items.length)return;addStyles();home(items,uniqueUrls(items,'previewUrl'),uniqueUrls(items,'downloadUrl'));detail(items,uniqueUrls(items,'previewUrl'),uniqueUrls(items,'downloadUrl'));}).catch(e=>console.warn('تعذر تهيئة مكتبة PDF:',e));
+function renderData(data){
+ const items=Array.isArray(data&&data.resources)?data.resources:[];
+ if(!items.length)return false;
+ addStyles();
+ home(items,uniqueUrls(items,'previewUrl'),uniqueUrls(items,'downloadUrl'));
+ detail(items,uniqueUrls(items,'previewUrl'),uniqueUrls(items,'downloadUrl'));
+ return true;
+}
+function loadLocal(){
+ return fetch(new URL('assets/data/resources.json',root).href,{cache:'no-cache'})
+  .then(r=>{if(!r.ok)throw new Error('HTTP '+r.status);return r.json();})
+  .then(data=>{if(!renderData(data))throw new Error('الفهرس المحلي فارغ');})
+  .catch(e=>console.warn('تعذر تحميل فهرس الموارد المحلي:',e));
+}
+function loadDrive(){
+ const endpoint=String(window.NADJAH_DRIVE_FEED_URL||'').trim();
+ if(!endpoint||!/^https:\/\/script\.google\.com\/macros\/s\/[\w-]+\/exec(?:\?.*)?$/.test(endpoint))return loadLocal();
+ return new Promise(resolve=>{
+  const callback='NadjahDriveFeed_'+Date.now();
+  const tag=document.createElement('script');
+  let settled=false;
+  let timer;
+  const finish=()=>{if(settled)return;settled=true;clearTimeout(timer);try{delete window[callback];}catch(e){window[callback]=undefined;}tag.remove();};
+  const fallback=()=>{finish();loadLocal().then(resolve);};
+  timer=setTimeout(fallback,12000);
+  window[callback]=data=>{
+   if(settled)return;
+   if(!renderData(data)){fallback();return;}
+   finish();resolve();
+  };
+  tag.onerror=fallback;
+  tag.src=endpoint+(endpoint.includes('?')?'&':'?')+'callback='+encodeURIComponent(callback)+'&v='+Date.now();
+  document.head.appendChild(tag);
+ });
+}
+loadDrive().catch(e=>console.warn('تعذر تهيئة مكتبة PDF:',e));
 })();
