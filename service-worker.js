@@ -1,4 +1,4 @@
-const CACHE_VERSION = 'nadjah-v8';
+const CACHE_VERSION = 'nadjah-v9';
 const STATIC_CACHE = `${CACHE_VERSION}-static`;
 const RUNTIME_CACHE = `${CACHE_VERSION}-runtime`;
 
@@ -19,6 +19,8 @@ const APP_SHELL = [
   './assets/css/ads.css',
   './assets/css/ux.css',
   './assets/js/core.js',
+  './assets/js/pdf-library.js',
+  './assets/css/library-downloads.css',
   './assets/js/main.js',
   './assets/js/search-page.js',
   './assets/js/user-state.js',
