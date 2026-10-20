@@ -53,6 +53,7 @@ jobs:
           node --check assets/js/core.js
           node --check assets/js/search-page.js
           node --check assets/js/my-page.js
+          node --check assets/js/modul.js
           node --check service-worker.js
           python -m py_compile scripts/optimize_html.py scripts/validate_site.py
 
