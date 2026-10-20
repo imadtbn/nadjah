@@ -213,13 +213,24 @@
         currentResults = items.slice();
         if (reset) visibleCount = PAGE_SIZE;
 
-        results.innerHTML = '';
+        results.replaceChildren();
         summary.textContent = `${items.length} نتيجة`;
 
         if (!items.length) {
             const empty = document.createElement('div');
             empty.className = 'search-empty-state';
-            empty.textContent = 'لا توجد نتائج بهذه المعايير. جرّب تغيير أحد خيارات الفلترة.';
+
+            const message = document.createElement('p');
+            message.textContent = 'لا توجد نتائج بهذه المعايير. جرّب تغيير كلمات البحث أو امسح الفلاتر للبدء من جديد.';
+            empty.appendChild(message);
+
+            const resetButton = document.createElement('button');
+            resetButton.type = 'button';
+            resetButton.className = 'search-retry-btn';
+            resetButton.textContent = 'مسح الفلاتر';
+            resetButton.addEventListener('click', resetAllFilters);
+            empty.appendChild(resetButton);
+
             results.appendChild(empty);
             if (loadMore) loadMore.hidden = true;
             return;
@@ -250,11 +261,10 @@
         if (loadMore) {
             const remaining = Math.max(0, items.length - visibleCount);
             loadMore.hidden = remaining === 0;
-            loadMore.innerHTML = remaining
-                ? `<i class="fas fa-plus" aria-hidden="true"></i> إظهار المزيد (${remaining})`
-                : '';
+            loadMore.textContent = remaining ? `إظهار المزيد (${remaining})` : '';
         }
     }
+
     function applyFilters() {
         const query = q.value.trim();
         let items = window.NadjahCore.searchResources(query);
@@ -318,13 +328,53 @@
         applyFilters();
     }
 
-    waitForCore().then((data) => {
-        if (!data) {
-            summary.textContent = 'تعذر تحميل قاعدة البيانات.';
+    function resetAllFilters() {
+        q.value = '';
+        cycle.value = '';
+        level.value = '';
+        subject.value = '';
+        type.value = '';
+        semester.value = '';
+        rebuildCascade('cycle', false);
+        updateUrl();
+        applyFilters();
+        q.focus();
+    }
+
+    function showLoadError() {
+        summary.textContent = 'تعذر تحميل قاعدة النماذج.';
+        results.replaceChildren();
+
+        const empty = document.createElement('div');
+        empty.className = 'search-empty-state';
+        const message = document.createElement('p');
+        message.textContent = 'تحقق من اتصال الإنترنت ثم أعد المحاولة. لم يتم حذف أي بيانات أو تغيير الفلاتر المحفوظة في الرابط.';
+        empty.appendChild(message);
+
+        const retry = document.createElement('button');
+        retry.type = 'button';
+        retry.className = 'search-retry-btn';
+        retry.textContent = 'إعادة تحميل النماذج';
+        retry.addEventListener('click', () => {
+            summary.textContent = 'جارٍ تحميل قاعدة النماذج...';
+            retry.disabled = true;
+            waitForCore().then(initialize);
+        });
+        empty.appendChild(retry);
+        results.appendChild(empty);
+        if (loadMore) loadMore.hidden = true;
+    }
+
+    let initialized = false;
+
+    function initialize(data) {
+        if (!data?.resources || !Array.isArray(data.resources.resources)) {
+            showLoadError();
             return;
         }
-
-        allResources = data.resources.resources || [];
+        if (initialized) return;
+        initialized = true;
+        allResources = data.resources.resources;
 
         const params = new URLSearchParams(window.location.search);
         q.value = params.get('q') || '';
@@ -363,5 +413,7 @@
 
         updateUrl();
         applyFilters();
-    });
+    }
+
+    waitForCore().then(initialize);
 })();
