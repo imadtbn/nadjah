@@ -15,6 +15,7 @@ EXTERNAL_HEAVY = (
     "ScrollTrigger.min.js",
     "lenis.min.js",
 )
+GSAP_LIBS = ("gsap.min.js", "ScrollTrigger.min.js")
 
 
 ADSENSE_CLIENT = "ca-pub-5656416032906373"
@@ -213,10 +214,27 @@ def optimize(path: Path) -> bool:
         dirty = True
 
     has_shader = soup.select_one("#shader-canvas") is not None
+    inline_scripts = "\n".join(
+        script.get_text(" ", strip=False)
+        for script in soup.find_all("script")
+        if not script.get("src")
+    )
+    needs_gsap = bool(soup.select_one(
+        "#shader-canvas, .reveal, [data-stat-key], .hero-content, .semester-tab"
+    )) or any(token in inline_scripts for token in ("gsap", "ScrollTrigger"))
+    needs_lenis = has_shader or "Lenis" in inline_scripts
 
     for script in list(soup.find_all("script", src=True)):
         src = script.get("src", "")
         if "three.min.js" in src and not has_shader:
+            script.decompose()
+            dirty = True
+            continue
+        if any(name in src for name in GSAP_LIBS) and not needs_gsap:
+            script.decompose()
+            dirty = True
+            continue
+        if "lenis.min.js" in src and not needs_lenis:
             script.decompose()
             dirty = True
             continue
