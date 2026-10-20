@@ -800,8 +800,14 @@
     function initPwa() {
         if ('serviceWorker' in navigator) {
             let refreshing = false;
+            let hadController = Boolean(navigator.serviceWorker.controller);
 
             navigator.serviceWorker.addEventListener('controllerchange', () => {
+                // The first controller takes over without reloading the page the user just opened.
+                if (!hadController) {
+                    hadController = true;
+                    return;
+                }
                 if (refreshing) return;
                 refreshing = true;
                 window.location.reload();
@@ -871,6 +877,14 @@
     function init() {
         if (state.initialized) return;
         state.initialized = true;
+
+        // The offline fallback needs only the PWA lifecycle; avoid loading catalogs,
+        // user state, search handlers, and animation features on this lightweight page.
+        if (/\/offline\.html$/.test(window.location.pathname)) {
+            initPwa();
+            return;
+        }
+
         ensureUxStyles();
         state.dataReady = loadCentralData();
         initLoader();
