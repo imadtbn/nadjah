@@ -117,11 +117,12 @@ def metadata_html(path: Path, title: str, description: str, canonical: str) -> s
     og_type = "article" if path.name.endswith("-more.html") or path.parent == ROOT / "resources" else "website"
     noindex = path.name == "offline.html" or (path.parent == ROOT / "pages" and path.name in {"search.html", "my.html"})
     robots = "noindex, follow" if noindex else "index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1"
+    googlebot = "noindex, follow" if noindex else "index, follow, max-image-preview:large"
     return f'''    <title>{title}</title>
     <meta name="description" content="{description}">
     <meta name="author" content="{BRAND}">
     <meta name="robots" content="{robots}">
-    <meta name="googlebot" content="index, follow, max-image-preview:large">
+    <meta name="googlebot" content="{googlebot}">
     <meta name="language" content="Arabic">
     <meta name="application-name" content="{BRAND}">
     <meta name="theme-color" content="#0f172a">

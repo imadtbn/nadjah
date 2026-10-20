@@ -106,6 +106,20 @@ def normalize_ads(path: Path, soup: BeautifulSoup, prefix: str) -> bool:
         return False
 
     dirty = False
+    if path.relative_to(ROOT).as_posix() == "offline.html":
+        for old in list(soup.select(".ad-slot[data-site-ad], .ad-banner[data-site-ad], .ad-slot:has(ins.adsbygoogle), .ad-banner:has(ins.adsbygoogle)")):
+            old.decompose()
+            dirty = True
+        for tag in list(soup.find_all(["link", "script"])):
+            value = tag.get("href", "") if tag.name == "link" else tag.get("src", "")
+            clean = value.split("?", 1)[0].split("#", 1)[0].rstrip("/")
+            if tag.name == "link" and clean.endswith("assets/css/ads.css"):
+                tag.decompose()
+                dirty = True
+            elif tag.name == "script" and clean.endswith("assets/js/site-tags.js"):
+                tag.decompose()
+                dirty = True
+        return dirty
 
     for old in list(soup.select(".ad-slot[data-site-ad], .ad-banner[data-site-ad], .ad-slot:has(ins.adsbygoogle), .ad-banner:has(ins.adsbygoogle)")):
         old.decompose()
@@ -183,6 +197,58 @@ def version_local_assets(page_path: Path, soup: BeautifulSoup) -> bool:
 
     return dirty
 
+def ensure_resource_hints(soup: BeautifulSoup) -> bool:
+    """Preconnect only to third-party origins actually used by this page."""
+    if not soup.head:
+        return False
+
+    has_google_fonts = any(
+        tag.get("href", "").startswith("https://fonts.googleapis.com/")
+        for tag in soup.find_all("link", href=True)
+    )
+    origins = [
+        ("https://fonts.googleapis.com", False, has_google_fonts),
+        ("https://fonts.gstatic.com", True, has_google_fonts),
+        ("https://cdnjs.cloudflare.com", False, any(
+            (tag.get("href", "") if tag.name == "link" else tag.get("src", "")).startswith("https://cdnjs.cloudflare.com/")
+            for tag in soup.find_all(["link", "script"])
+        )),
+        ("https://unpkg.com", False, any(
+            tag.get("src", "").startswith("https://unpkg.com/")
+            for tag in soup.find_all("script", src=True)
+        )),
+    ]
+
+    dirty = False
+    for origin, crossorigin, needed in origins:
+        if not needed:
+            continue
+        existing = next((
+            link for link in soup.find_all("link", rel=True, href=True)
+            if "preconnect" in link.get("rel", []) and link["href"].rstrip("/") == origin
+        ), None)
+        if existing:
+            if crossorigin and existing.get("crossorigin") is None:
+                existing["crossorigin"] = ""
+                dirty = True
+            continue
+
+        hint = soup.new_tag("link", rel="preconnect", href=origin)
+        if crossorigin:
+            hint["crossorigin"] = ""
+        target = next((
+            tag for tag in soup.head.find_all(["link", "script"])
+            if (tag.get("href", "") if tag.name == "link" else tag.get("src", "")).startswith(origin + "/")
+        ), None)
+        if target:
+            target.insert_before(hint)
+        else:
+            soup.head.append(hint)
+        dirty = True
+
+    return dirty
+
+
 def optimize(path: Path) -> bool:
     raw = path.read_text(encoding="utf-8", errors="ignore")
     if "<html" not in raw.lower():
@@ -190,6 +256,8 @@ def optimize(path: Path) -> bool:
 
     soup = BeautifulSoup(raw, "html.parser")
     dirty = normalize_shared_asset_tags(soup)
+    if ensure_resource_hints(soup):
+        dirty = True
 
     depth = len(path.relative_to(ROOT).parent.parts)
     prefix = "../" * depth
