@@ -430,7 +430,7 @@
 
         const results = document.createElement('div');
         results.className = 'nadjah-search-results';
-        results.setAttribute('role', 'listbox');
+        results.setAttribute('role', 'region');
         results.setAttribute('aria-label', 'اقتراحات البحث');
         results.id = 'nadjah-search-results';
         searchBox.setAttribute('aria-controls', results.id);
@@ -518,6 +518,12 @@
                 return;
             }
 
+            const options = document.createElement('div');
+            options.className = 'nadjah-search-options';
+            options.setAttribute('role', 'listbox');
+            options.id = 'nadjah-search-options';
+            results.appendChild(options);
+
             ranked.forEach(({ item }, index) => {
                 const link = document.createElement('a');
                 link.className = 'nadjah-search-item';
@@ -544,7 +550,7 @@
                 if (item.semester) addMeta('• الفصل ' + item.semester);
                 if (item.corrected) addMeta('• مع التصحيح');
                 link.appendChild(meta);
-                results.appendChild(link);
+                options.appendChild(link);
             });
 
             const all = document.createElement('a');
@@ -670,7 +676,10 @@
             { label: 'تواصل', icon: 'fa-envelope', href: new URL('pages/contact.html', siteRootUrl).href }
         ];
 
-        const activeClass = (href) => current.pathname === new URL(href).pathname ? ' active' : '';
+        const activeClass = (href) => {
+            const normalizePath = (path) => path.replace(/\/index\.html$/, '/');
+            return normalizePath(current.pathname) === normalizePath(new URL(href).pathname) ? ' active' : '';
+        };
 
         let mobileBar = document.querySelector('.nadjah-mobile-nav');
         let moreSheet = document.querySelector('.nadjah-more-sheet');
@@ -681,7 +690,7 @@
             mobileBar.className = 'nadjah-mobile-nav';
             mobileBar.setAttribute('aria-label', 'التنقل السريع');
             mobileBar.innerHTML = primary.map((item) => `
-                <a href="${item.href}" class="mobile-nav-item${activeClass(item.href)}">
+                <a href="${item.href}" class="mobile-nav-item${activeClass(item.href)}"${activeClass(item.href) ? ' aria-current="page"' : ''}>
                     <i class="fas ${item.icon}" aria-hidden="true"></i>
                     <span>${item.label}</span>
                 </a>
