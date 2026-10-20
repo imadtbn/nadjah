@@ -137,6 +137,17 @@ def main() -> None:
         soup = BeautifulSoup(path.read_bytes().decode("utf-8", errors="ignore"), "html.parser")
         assert len(soup.find_all("title")) == 1, path
         assert len(soup.find_all("meta", attrs={"name": "description"})) == 1, path
+        robots_meta = soup.find("meta", attrs={"name": "robots"})
+        googlebot_meta = soup.find("meta", attrs={"name": "googlebot"})
+        robots_content = (robots_meta.get("content", "") if robots_meta else "").lower()
+        googlebot_content = (googlebot_meta.get("content", "") if googlebot_meta else "").lower()
+        if "noindex" in robots_content:
+            assert "noindex" in googlebot_content, (
+                "Googlebot directive must not contradict the page noindex policy",
+                path,
+                robots_content,
+                googlebot_content,
+            )
 
         shared_core = [
             tag for tag in soup.find_all("script", src=True)
@@ -210,11 +221,18 @@ def main() -> None:
             )
 
         ads = soup.select(".ad-slot[data-site-ad] ins.adsbygoogle, .ad-banner[data-site-ad] ins.adsbygoogle")
-        assert len(ads) == 2, ("expected exactly two ads", path, len(ads))
-        for ad in ads:
-            assert ad.get("data-ad-client") == "ca-pub-5656416032906373", (path, ad)
-            assert ad.get("data-ad-slot"), (path, ad)
-            assert ad.get("data-full-width-responsive") == "true", (path, ad)
+        if path.relative_to(ROOT).as_posix() == "offline.html":
+            assert not ads, ("offline fallback should not load ad units", path)
+            assert not any(
+                tag.get("src", "").split("?", 1)[0].endswith("assets/js/site-tags.js")
+                for tag in soup.find_all("script", src=True)
+            ), ("offline fallback should not load ad scripts", path)
+        else:
+            assert len(ads) == 2, ("expected exactly two ads", path, len(ads))
+            for ad in ads:
+                assert ad.get("data-ad-client") == "ca-pub-5656416032906373", (path, ad)
+                assert ad.get("data-ad-slot"), (path, ad)
+                assert ad.get("data-full-width-responsive") == "true", (path, ad)
 
         cards = soup.select(".doc-card")
         total_cards += len(cards)
@@ -292,6 +310,24 @@ def main() -> None:
     assert "./assets/data/resources.json" not in app_shell, (
         "large resources catalog must load on demand, not during service-worker install"
     )
+    shell_paths = [
+        entry.strip().strip("'\\\"")
+        for entry in app_shell.splitlines()
+        if entry.strip().startswith(("'", '"')) and entry.strip().rstrip(",").strip("'\\\"") != "./"
+    ]
+    missing_shell_assets = [
+        item for item in shell_paths
+        if not (ROOT / item.removeprefix("./")).exists()
+    ]
+    assert not missing_shell_assets, ("PWA app shell references missing assets", missing_shell_assets)
+    for required_asset in (
+        "./assets/css/style-main2.css",
+        "./assets/css/ads.css",
+        "./assets/css/ux.css",
+        "./assets/js/core.js",
+        "./offline.html",
+    ):
+        assert required_asset in app_shell, ("required offline shell asset missing", required_asset)
 
     core_js = (ROOT / "assets" / "js" / "core.js").read_text(encoding="utf-8")
     assert "function loadResources()" in core_js, "missing on-demand resource loader"
@@ -302,6 +338,8 @@ def main() -> None:
 
     search_js = (ROOT / "assets" / "js" / "search-page.js").read_text(encoding="utf-8")
     ux_css = (ROOT / "assets" / "css" / "ux.css").read_text(encoding="utf-8")
+    optimizer = (ROOT / "scripts" / "optimize_html.py").read_text(encoding="utf-8")
+    assert "def ensure_resource_hints" in optimizer, "missing targeted third-party preconnect optimization"
     assert "aria-activedescendant" in core_js and "const setActive" in core_js, (
         "shared search must support accessible keyboard navigation"
     )
