@@ -398,6 +398,36 @@ def main() -> None:
     ):
         assert my_page.find(id=required_id), ("user hub is missing a required control or section", required_id)
 
+    # Resource links are cloned from nested semester HTML into their parent
+    # subject pages. The shared module must rebase those links to the project
+    # root, and every linked resource ID must have a generated detail page.
+    modul_js = (ROOT / "assets" / "js" / "modul.js").read_text(encoding="utf-8")
+    assert "function normalizeResourceDetailLinks(root = document)" in modul_js, (
+        "subject pages must normalize resource detail links after cloning cards"
+    )
+    assert "new MutationObserver" in modul_js and "a.resource-detail-link" in modul_js, (
+        "resource detail links must also be normalized when async cards are inserted"
+    )
+    checked_resource_links = 0
+    for source_page in (ROOT / "levels").rglob("*.html"):
+        source_soup = BeautifulSoup(
+            source_page.read_text(encoding="utf-8", errors="ignore"),
+            "html.parser",
+        )
+        for card in source_soup.select(".doc-card[data-resource-id]"):
+            if not card.select_one("a.resource-detail-link"):
+                continue
+            resource_id = (card.get("data-resource-id") or "").strip()
+            target = ROOT / "resources" / f"{resource_id}.html"
+            assert resource_id.startswith("resource-") and target.is_file(), (
+                "resource detail link must map to an existing generated resource page",
+                source_page,
+                resource_id,
+                target,
+            )
+            checked_resource_links += 1
+    assert checked_resource_links > 0, "no resource detail links were validated"
+
     resource_pages = sorted((ROOT / "resources").glob("*.html"))
     assert resource_pages, "resource detail pages must exist"
     for resource_page in resource_pages:
