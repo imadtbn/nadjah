@@ -38,6 +38,36 @@ def ensure_local_asset(soup: BeautifulSoup, tag_name: str, attr: str, value: str
     return True
 
 
+def normalize_shared_asset_tags(soup: BeautifulSoup) -> bool:
+    """Keep one reference to each shared local asset, regardless of query string."""
+    dirty = False
+    seen: set[tuple[str, str]] = set()
+
+    for tag in list(soup.find_all(["script", "link"])):
+        if tag.name == "script":
+            attr = "src"
+            asset = "core.js"
+        elif tag.get("rel") and "stylesheet" in tag.get("rel", []):
+            attr = "href"
+            asset = "ux.css"
+        else:
+            continue
+
+        value = tag.get(attr, "")
+        clean_value = value.split("?", 1)[0].split("#", 1)[0].rstrip("/")
+        if not clean_value.endswith(f"assets/{'js/core.js' if asset == 'core.js' else 'css/ux.css'}"):
+            continue
+
+        key = (tag.name, asset)
+        if key in seen:
+            tag.decompose()
+            dirty = True
+        else:
+            seen.add(key)
+
+    return dirty
+
+
 def make_ad_unit(soup: BeautifulSoup, slot: str, kind: str):
     wrapper = soup.new_tag("div")
     wrapper["class"] = ["ad-slot", f"ad-slot--{kind}"]
@@ -154,17 +184,17 @@ def optimize(path: Path) -> bool:
         return False
 
     soup = BeautifulSoup(raw, "html.parser")
-    dirty = False
+    dirty = normalize_shared_asset_tags(soup)
 
     depth = len(path.relative_to(ROOT).parent.parts)
     prefix = "../" * depth
 
-    if soup.head and not soup.find("link", href=lambda value: value and value.rstrip().endswith("assets/css/ux.css")):
+    if soup.head and not soup.find("link", href=lambda value: value and value.split("?", 1)[0].split("#", 1)[0].rstrip("/").endswith("assets/css/ux.css")):
         link = soup.new_tag("link", rel="stylesheet", href=prefix + "assets/css/ux.css")
         soup.head.append(link)
         dirty = True
 
-    if soup.body and not soup.find("script", src=lambda value: value and value.rstrip().endswith("assets/js/core.js")):
+    if soup.body and not soup.find("script", src=lambda value: value and value.split("?", 1)[0].split("#", 1)[0].rstrip("/").endswith("assets/js/core.js")):
         script = soup.new_tag("script", src=prefix + "assets/js/core.js")
         script["defer"] = ""
         soup.body.append(script)
