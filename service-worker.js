@@ -1,4 +1,4 @@
-const CACHE_VERSION = 'nadjah-v6';
+const CACHE_VERSION = 'nadjah-v7';
 const STATIC_CACHE = `${CACHE_VERSION}-static`;
 const RUNTIME_CACHE = `${CACHE_VERSION}-runtime`;
 
@@ -24,7 +24,6 @@ const APP_SHELL = [
   './assets/data/levels.json',
   './assets/data/subjects.json',
   './assets/data/branches.json',
-  './assets/data/resources.json',
   './assets/images/icon22.png'
 ];
 
@@ -63,6 +62,29 @@ function isHtml(request) {
     request.headers.get('accept')?.includes('text/html');
 }
 
+async function matchCached(request) {
+  const runtime = await caches.open(RUNTIME_CACHE);
+  return (await runtime.match(request)) || (await caches.match(request));
+}
+
+async function matchUnversionedAsset(url) {
+  const plainRequest = new Request(`${url.origin}${url.pathname}`);
+  const runtime = await caches.open(RUNTIME_CACHE);
+  return (await runtime.match(plainRequest)) || (await caches.match(plainRequest));
+}
+
+function refreshAsset(request) {
+  return fetch(request, { cache: 'no-store' })
+    .then(async (response) => {
+      if (response.ok) {
+        const cache = await caches.open(RUNTIME_CACHE);
+        await cache.put(request, response.clone());
+      }
+      return response;
+    })
+    .catch(() => null);
+}
+
 self.addEventListener('fetch', (event) => {
   const request = event.request;
   if (request.method !== 'GET' || !sameOrigin(request)) return;
@@ -86,10 +108,35 @@ self.addEventListener('fetch', (event) => {
   }
 
   const url = new URL(request.url);
-  const isFreshAsset = /\.(?:css|js|json)$/i.test(url.pathname);
-  const isCacheFirstAsset = /\.(?:png|jpg|jpeg|webp|svg|woff2?)$/i.test(url.pathname);
+  const isJson = /\\.json$/i.test(url.pathname);
+  const isCssOrJs = /\\.(?:css|js)$/i.test(url.pathname);
+  const isVersionedAsset = isCssOrJs && url.searchParams.has('v');
+  const isCacheFirstAsset = /\\.(?:png|jpg|jpeg|webp|svg|woff2?)$/i.test(url.pathname);
 
-  if (isFreshAsset) {
+  // JSON and content-versioned CSS/JS use stale-while-revalidate:
+  // render from cache immediately, while refreshing the same URL in the background.
+  if (isJson || isVersionedAsset) {
+    const update = refreshAsset(request);
+    event.waitUntil(update.then(() => undefined));
+    event.respondWith((async () => {
+      const cached = await matchCached(request);
+      if (cached) return cached;
+
+      const response = await update;
+      if (response) return response;
+
+      if (isVersionedAsset) {
+        const fallback = await matchUnversionedAsset(url);
+        if (fallback) return fallback;
+      }
+
+      return Response.error();
+    })());
+    return;
+  }
+
+  // Unversioned script/style requests remain network-first for compatibility.
+  if (isCssOrJs) {
     event.respondWith(
       fetch(request, { cache: 'no-store' })
         .then((response) => {
@@ -100,7 +147,7 @@ self.addEventListener('fetch', (event) => {
           return response;
         })
         .catch(async () => {
-          return (await caches.match(request)) || Response.error();
+          return (await matchCached(request)) || Response.error();
         })
     );
     return;
@@ -116,7 +163,7 @@ self.addEventListener('fetch', (event) => {
             caches.open(RUNTIME_CACHE).then((cache) => cache.put(request, copy));
           }
           return response;
-        });
+        })
       })
     );
   }
