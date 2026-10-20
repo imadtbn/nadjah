@@ -149,6 +149,14 @@ def main() -> None:
         ]
         assert len(shared_core) == 1, ("expected exactly one core.js reference", path, len(shared_core))
         assert len(shared_ux) == 1, ("expected exactly one ux.css reference", path, len(shared_ux))
+        assert shared_core[0].get("data-nadjah-core") == "true", (
+            "expected core.js runtime-loader marker",
+            path,
+        )
+        assert shared_ux[0].get("data-nadjah-ux") == "true", (
+            "expected ux.css runtime-loader marker",
+            path,
+        )
 
         canonical = soup.find("link", rel="canonical")
         assert canonical and canonical.get("href") == expected_url(path), (path, canonical)
