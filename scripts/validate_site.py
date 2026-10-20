@@ -300,6 +300,33 @@ def main() -> None:
         "initial data load should exclude the large resources catalog"
     )
 
+    search_js = (ROOT / "assets" / "js" / "search-page.js").read_text(encoding="utf-8")
+    ux_css = (ROOT / "assets" / "css" / "ux.css").read_text(encoding="utf-8")
+    assert "aria-activedescendant" in core_js and "const setActive" in core_js, (
+        "shared search must support accessible keyboard navigation"
+    )
+    assert "title.textContent = item.title" in core_js, (
+        "shared search results must render data as text rather than HTML"
+    )
+    assert "إعادة المحاولة" in core_js and "تعذر تحميل نتائج البحث" in core_js, (
+        "shared search must provide a recoverable data-load error state"
+    )
+    assert "aria-modal" in core_js and "aria-labelledby" in core_js, (
+        "mobile navigation sheet must expose dialog semantics"
+    )
+    assert "function resetAllFilters()" in search_js, (
+        "search page must offer a reset action for empty results"
+    )
+    assert "إعادة تحميل النماذج" in search_js, (
+        "search page must provide a data-load retry action"
+    )
+    assert ".nadjah-search-item[data-active]" in ux_css, (
+        "keyboard-selected search suggestions need a visible focus state"
+    )
+    assert ".search-retry-btn:focus-visible" in ux_css, (
+        "search recovery actions need a visible keyboard focus state"
+    )
+
     print(
         f"Validation passed: {len(pages)} pages, "
         f"{len(resource_ids)} resources, {len(subject_ids)} subjects, "
