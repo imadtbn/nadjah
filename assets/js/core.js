@@ -421,6 +421,7 @@
         searchBox.setAttribute('autocomplete', 'off');
         searchBox.setAttribute('role', 'combobox');
         searchBox.setAttribute('aria-autocomplete', 'list');
+        searchBox.setAttribute('aria-haspopup', 'listbox');
         searchBox.setAttribute('aria-expanded', 'false');
 
         const container = searchBox.closest('.search-container') || searchBox.parentElement;
@@ -429,18 +430,21 @@
 
         const results = document.createElement('div');
         results.className = 'nadjah-search-results';
-        results.setAttribute('role', 'listbox');
+        results.setAttribute('role', 'region');
+        results.setAttribute('aria-label', 'اقتراحات البحث');
         results.id = 'nadjah-search-results';
         searchBox.setAttribute('aria-controls', results.id);
         container.appendChild(results);
 
         let activeIndex = -1;
         let currentItems = [];
+        let requestId = 0;
 
         const closeResults = () => {
             results.classList.remove('active');
-            results.innerHTML = '';
+            results.replaceChildren();
             searchBox.setAttribute('aria-expanded', 'false');
+            searchBox.removeAttribute('aria-activedescendant');
             activeIndex = -1;
             currentItems = [];
         };
@@ -450,24 +454,46 @@
             searchBox.setAttribute('aria-expanded', 'true');
         };
 
-        const render = (query, catalog = state.data?.resources) => {
+        const showMessage = (message, { retry = false, query = '' } = {}) => {
+            results.replaceChildren();
+            const status = document.createElement('div');
+            status.className = retry ? 'nadjah-search-empty nadjah-search-error' : 'nadjah-search-empty';
+            status.setAttribute('role', 'status');
+            status.textContent = message;
+            results.appendChild(status);
+
+            if (retry) {
+                const button = document.createElement('button');
+                button.type = 'button';
+                button.className = 'nadjah-search-retry';
+                button.textContent = 'إعادة المحاولة';
+                button.addEventListener('click', () => runSearch(query, true));
+                results.appendChild(button);
+            } else if (query) {
+                const all = document.createElement('a');
+                all.className = 'nadjah-search-all';
+                all.href = searchPageUrl(query);
+                all.textContent = 'فتح البحث المتقدم';
+                results.appendChild(all);
+            }
+            currentItems = [];
+            activeIndex = -1;
+            searchBox.removeAttribute('aria-activedescendant');
+            openResults();
+        };
+
+        const render = (query, catalog) => {
             const normalized = normalizeArabic(query);
             if (!normalized) {
                 closeResults();
                 return;
             }
-
-            if (!catalog) {
-                results.innerHTML = '';
-                const failed = document.createElement('div');
-                failed.className = 'nadjah-search-empty';
-                failed.textContent = 'تعذر تحميل نتائج البحث. حاول مرة أخرى.';
-                results.appendChild(failed);
-                openResults();
+            if (!catalog || !Array.isArray(catalog.resources)) {
+                showMessage('تعذر تحميل نتائج البحث. تحقق من الاتصال ثم أعد المحاولة.', { retry: true, query });
                 return;
             }
 
-            const data = catalog.resources || [];
+            const data = catalog.resources;
             const tokens = normalized.split(' ').filter(Boolean);
             const ranked = data
                 .map((item) => {
@@ -483,33 +509,48 @@
                 .slice(0, 8);
 
             currentItems = ranked.map((entry) => entry.item);
-            results.innerHTML = '';
+            activeIndex = -1;
+            searchBox.removeAttribute('aria-activedescendant');
+            results.replaceChildren();
 
             if (!ranked.length) {
-                const empty = document.createElement('div');
-                empty.className = 'nadjah-search-empty';
-                empty.textContent = 'لا توجد نتائج مطابقة';
-                results.appendChild(empty);
-                openResults();
+                showMessage('لا توجد نتائج مطابقة. جرّب كلمات أخرى أو افتح البحث المتقدم.', { query });
                 return;
             }
+
+            const options = document.createElement('div');
+            options.className = 'nadjah-search-options';
+            options.setAttribute('role', 'listbox');
+            options.id = 'nadjah-search-options';
+            results.appendChild(options);
 
             ranked.forEach(({ item }, index) => {
                 const link = document.createElement('a');
                 link.className = 'nadjah-search-item';
                 link.href = resourceUrl(item.id);
+                link.id = `nadjah-search-option-${index}`;
                 link.setAttribute('role', 'option');
+                link.setAttribute('aria-selected', 'false');
                 link.dataset.searchIndex = String(index);
-                link.innerHTML = `
-                    <div class="nadjah-search-title">${item.title}</div>
-                    <div class="nadjah-search-meta">
-                        <span>${item.subject || 'مادة تعليمية'}</span>
-                        <span>• ${typeLabel(item.type)}</span>
-                        ${item.semester ? `<span>• الفصل ${item.semester}</span>` : ''}
-                        ${item.corrected ? '<span>• مع التصحيح</span>' : ''}
-                    </div>
-                `;
-                results.appendChild(link);
+
+                const title = document.createElement('div');
+                title.className = 'nadjah-search-title';
+                title.textContent = item.title || 'نموذج تعليمي';
+                link.appendChild(title);
+
+                const meta = document.createElement('div');
+                meta.className = 'nadjah-search-meta';
+                const addMeta = (text) => {
+                    const span = document.createElement('span');
+                    span.textContent = text;
+                    meta.appendChild(span);
+                };
+                addMeta(item.subject || 'مادة تعليمية');
+                addMeta('• ' + typeLabel(item.type));
+                if (item.semester) addMeta('• الفصل ' + item.semester);
+                if (item.corrected) addMeta('• مع التصحيح');
+                link.appendChild(meta);
+                options.appendChild(link);
             });
 
             const all = document.createElement('a');
@@ -520,19 +561,66 @@
             openResults();
         };
 
-        searchBox.addEventListener('input', (event) => {
-            const query = event.target.value;
+        const runSearch = (query, retry = false) => {
+            const currentRequest = ++requestId;
             if (!normalizeArabic(query)) {
                 closeResults();
                 return;
             }
 
+            if (!retry && !state.data?.resources) {
+                results.replaceChildren();
+                const loading = document.createElement('div');
+                loading.className = 'nadjah-search-empty nadjah-search-loading';
+                loading.setAttribute('role', 'status');
+                loading.textContent = 'جارٍ تحميل نتائج البحث…';
+                results.appendChild(loading);
+                openResults();
+            }
+
             loadResources().then((data) => {
-                if (searchBox.value === query) render(query, data?.resources);
+                if (currentRequest !== requestId || searchBox.value !== query) return;
+                render(query, data?.resources);
+            }).catch(() => {
+                if (currentRequest !== requestId || searchBox.value !== query) return;
+                showMessage('تعذر تحميل نتائج البحث. تحقق من الاتصال ثم أعد المحاولة.', { retry: true, query });
             });
-        });
+        };
+
+        const setActive = (index) => {
+            if (!currentItems.length) return;
+            activeIndex = (index + currentItems.length) % currentItems.length;
+            results.querySelectorAll('.nadjah-search-item[role="option"]').forEach((item, itemIndex) => {
+                const active = itemIndex === activeIndex;
+                item.setAttribute('aria-selected', String(active));
+                item.toggleAttribute('data-active', active);
+            });
+            searchBox.setAttribute('aria-activedescendant', `nadjah-search-option-${activeIndex}`);
+            results.querySelector('[data-active]')?.scrollIntoView({ block: 'nearest' });
+        };
+
+        searchBox.addEventListener('input', (event) => runSearch(event.target.value));
 
         searchBox.addEventListener('keydown', (event) => {
+            if (event.key === 'Escape') {
+                if (results.classList.contains('active')) {
+                    event.preventDefault();
+                    closeResults();
+                    searchBox.focus();
+                }
+                return;
+            }
+
+            if (event.key === 'ArrowDown' || event.key === 'ArrowUp') {
+                if (!results.classList.contains('active') || !currentItems.length) return;
+                event.preventDefault();
+                const next = activeIndex < 0
+                    ? (event.key === 'ArrowDown' ? 0 : currentItems.length - 1)
+                    : activeIndex + (event.key === 'ArrowDown' ? 1 : -1);
+                setActive(next);
+                return;
+            }
+
             if (event.key === 'Enter') {
                 if (activeIndex >= 0 && currentItems[activeIndex]) {
                     event.preventDefault();
@@ -544,22 +632,6 @@
                     event.preventDefault();
                     window.location.href = searchPageUrl(query);
                 }
-                return;
-            }
-
-            if (!results.classList.contains('active') || !currentItems.length) return;
-            if (event.key === 'ArrowDown' || event.key === 'ArrowUp') {
-                event.preventDefault();
-                activeIndex += event.key === 'ArrowDown' ? 1 : -1;
-                if (activeIndex < 0) activeIndex = currentItems.length - 1;
-                if (activeIndex >= currentItems.length) activeIndex = 0;
-                results.querySelectorAll('.nadjah-search-item').forEach((item, index) => {
-                    item.toggleAttribute('data-active', index === activeIndex);
-                    if (index === activeIndex) item.focus();
-                });
-            } else if (event.key === 'Escape') {
-                closeResults();
-                searchBox.focus();
             }
         });
 
@@ -569,11 +641,7 @@
 
         state.dataReady?.then(() => {
             const query = searchBox.value.trim();
-            if (query) {
-                loadResources().then((data) => {
-                    if (searchBox.value.trim() === query) render(query, data?.resources);
-                });
-            }
+            if (query) runSearch(query);
         });
     }
 
@@ -608,7 +676,10 @@
             { label: 'تواصل', icon: 'fa-envelope', href: new URL('pages/contact.html', siteRootUrl).href }
         ];
 
-        const activeClass = (href) => current.pathname === new URL(href).pathname ? ' active' : '';
+        const activeClass = (href) => {
+            const normalizePath = (path) => path.replace(/\/index\.html$/, '/');
+            return normalizePath(current.pathname) === normalizePath(new URL(href).pathname) ? ' active' : '';
+        };
 
         let mobileBar = document.querySelector('.nadjah-mobile-nav');
         let moreSheet = document.querySelector('.nadjah-more-sheet');
@@ -619,7 +690,7 @@
             mobileBar.className = 'nadjah-mobile-nav';
             mobileBar.setAttribute('aria-label', 'التنقل السريع');
             mobileBar.innerHTML = primary.map((item) => `
-                <a href="${item.href}" class="mobile-nav-item${activeClass(item.href)}">
+                <a href="${item.href}" class="mobile-nav-item${activeClass(item.href)}"${activeClass(item.href) ? ' aria-current="page"' : ''}>
                     <i class="fas ${item.icon}" aria-hidden="true"></i>
                     <span>${item.label}</span>
                 </a>
@@ -636,12 +707,15 @@
             moreSheet = document.createElement('div');
             moreSheet.className = 'nadjah-more-sheet';
             moreSheet.setAttribute('aria-hidden', 'true');
+            moreSheet.setAttribute('role', 'dialog');
+            moreSheet.setAttribute('aria-modal', 'true');
+            moreSheet.setAttribute('aria-labelledby', 'nadjah-more-title');
             moreSheet.innerHTML = `
                 <div class="nadjah-more-handle" aria-hidden="true"></div>
-                <div class="nadjah-more-title">المزيد</div>
+                <div class="nadjah-more-title" id="nadjah-more-title">المزيد</div>
                 <div class="nadjah-more-links">
                     ${secondary.map((item) => `
-                        <a href="${item.href}" class="${activeClass(item.href).trim()}">
+                        <a href="${item.href}" class="${activeClass(item.href).trim()}"${activeClass(item.href) ? ' aria-current="page"' : ''}>
                             <i class="fas ${item.icon}" aria-hidden="true"></i>
                             <span>${item.label}</span>
                         </a>
@@ -659,10 +733,16 @@
 
         const moreButton = mobileBar.querySelector('.mobile-nav-more');
         const setMoreOpen = (open) => {
+            const wasOpen = moreSheet.classList.contains('active');
             moreSheet.classList.toggle('active', open);
             backdrop.classList.toggle('active', open);
             moreButton?.setAttribute('aria-expanded', String(open));
             moreSheet.setAttribute('aria-hidden', String(!open));
+            if (open) {
+                moreSheet.querySelector('a')?.focus();
+            } else if (wasOpen && moreSheet.contains(document.activeElement)) {
+                moreButton?.focus();
+            }
         };
 
         moreButton?.addEventListener('click', () => {

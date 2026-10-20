@@ -1697,3 +1697,82 @@
         padding-top: max(88px, calc(76px + env(safe-area-inset-top))) !important;
     }
 }
+
+/* Phase 3: accessible search and navigation states */
+.search-page,
+.search-shell,
+.search-toolbar,
+.search-results-grid,
+.search-result-card {
+    box-sizing: border-box;
+    min-width: 0;
+    max-width: 100%;
+}
+.search-result-card h2,
+.nadjah-search-title {
+    overflow-wrap: anywhere;
+}
+.nadjah-search-results {
+    box-sizing: border-box;
+    max-width: 100%;
+    overscroll-behavior: contain;
+}
+.nadjah-search-item[data-active],
+.nadjah-search-item[aria-selected="true"] {
+    background: rgba(212,175,55,.13);
+    box-shadow: inset -3px 0 0 var(--gold, #d4af37);
+}
+.nadjah-search-empty {
+    line-height: 1.8;
+    overflow-wrap: anywhere;
+}
+.nadjah-search-retry,
+.search-retry-btn {
+    min-height: 44px;
+    max-width: 100%;
+    margin: .35rem auto .7rem;
+    padding: .65rem 1rem;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid rgba(212,175,55,.35);
+    border-radius: 12px;
+    background: rgba(212,175,55,.09);
+    color: var(--gold, #d4af37);
+    font: inherit;
+    font-weight: 700;
+    cursor: pointer;
+}
+.nadjah-search-retry:focus-visible,
+.search-retry-btn:focus-visible,
+.nadjah-mobile-nav a:focus-visible,
+.nadjah-mobile-nav button:focus-visible,
+.nadjah-more-links a:focus-visible {
+    outline: 2px solid var(--gold, #d4af37);
+    outline-offset: 2px;
+}
+.search-empty-state p {
+    margin: 0 0 .8rem;
+}
+.search-empty-state .search-retry-btn {
+    margin-bottom: 0;
+}
+.nadjah-more-sheet[aria-hidden="true"] {
+    visibility: hidden;
+}
+@media (max-width: 640px) {
+    .search-page {
+        padding-right: max(.75rem, env(safe-area-inset-right));
+        padding-left: max(.75rem, env(safe-area-inset-left));
+        padding-bottom: calc(6rem + env(safe-area-inset-bottom));
+    }
+    .search-toolbar {
+        padding: .75rem;
+        gap: .65rem;
+        border-radius: 16px;
+    }
+    .search-result-card {
+        padding: .95rem;
+    }
+}
+
