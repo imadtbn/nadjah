@@ -1,4 +1,4 @@
-const CACHE_VERSION = 'nadjah-v9';
+const CACHE_VERSION = 'nadjah-v10';
 const STATIC_CACHE = `${CACHE_VERSION}-static`;
 const RUNTIME_CACHE = `${CACHE_VERSION}-runtime`;
 
@@ -20,6 +20,7 @@ const APP_SHELL = [
   './assets/css/ux.css',
   './assets/js/core.js',
   './assets/js/pdf-library.js',
+  './assets/js/google-drive-config.js',
   './assets/css/library-downloads.css',
   './assets/js/main.js',
   './assets/js/search-page.js',
