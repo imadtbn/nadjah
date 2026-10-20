@@ -311,7 +311,7 @@ def main() -> None:
         "large resources catalog must load on demand, not during service-worker install"
     )
     shell_paths = [
-        entry.strip().strip("'\\\"")
+        entry.strip().rstrip(",").strip().strip("'\\\"")
         for entry in app_shell.splitlines()
         if entry.strip().startswith(("'", '"')) and entry.strip().rstrip(",").strip("'\\\"") != "./"
     ]
