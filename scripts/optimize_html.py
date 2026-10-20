@@ -64,6 +64,10 @@ def normalize_shared_asset_tags(soup: BeautifulSoup) -> bool:
             dirty = True
         else:
             seen.add(key)
+            marker = "data-nadjah-core" if asset == "core.js" else "data-nadjah-ux"
+            if tag.get(marker) != "true":
+                tag[marker] = "true"
+                dirty = True
 
     return dirty
 
@@ -191,12 +195,14 @@ def optimize(path: Path) -> bool:
 
     if soup.head and not soup.find("link", href=lambda value: value and value.split("?", 1)[0].split("#", 1)[0].rstrip("/").endswith("assets/css/ux.css")):
         link = soup.new_tag("link", rel="stylesheet", href=prefix + "assets/css/ux.css")
+        link["data-nadjah-ux"] = "true"
         soup.head.append(link)
         dirty = True
 
     if soup.body and not soup.find("script", src=lambda value: value and value.split("?", 1)[0].split("#", 1)[0].rstrip("/").endswith("assets/js/core.js")):
         script = soup.new_tag("script", src=prefix + "assets/js/core.js")
         script["defer"] = ""
+        script["data-nadjah-core"] = "true"
         soup.body.append(script)
         dirty = True
 
