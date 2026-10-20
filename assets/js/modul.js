@@ -1,4 +1,71 @@
 const scriptElement = document.currentScript;
+
+// Resource cards fetched from nested semester pages retain links relative to the
+// fetched file. After cloning them into a subject page, those links resolve from
+// the wrong directory and can drop the GitHub Pages /nadjah/ prefix.
+function getNadjahSiteBaseUrl() {
+    const canonicalHref = document.querySelector('link[rel="canonical"]')?.href;
+    let pageUrl;
+
+    try {
+        pageUrl = new URL(canonicalHref || window.location.href, window.location.href);
+    } catch {
+        pageUrl = new URL(window.location.href);
+    }
+
+    const projectMarker = '/nadjah/';
+    const markerIndex = pageUrl.pathname.indexOf(projectMarker);
+    const basePath = markerIndex >= 0
+        ? pageUrl.pathname.slice(0, markerIndex + projectMarker.length)
+        : projectMarker;
+
+    return new URL(basePath, pageUrl.origin);
+}
+
+function normalizeResourceDetailLinks(root = document) {
+    const cards = [];
+
+    if (root?.nodeType === 1 && root.matches?.('.doc-card[data-resource-id]')) {
+        cards.push(root);
+    }
+    if (root?.querySelectorAll) {
+        cards.push(...root.querySelectorAll('.doc-card[data-resource-id]'));
+    }
+    if (!cards.length) return;
+
+    const siteBaseUrl = getNadjahSiteBaseUrl();
+
+    cards.forEach((card) => {
+        const resourceId = (card.getAttribute('data-resource-id') || '').trim();
+        if (!/^resource-[a-z0-9-]+$/i.test(resourceId)) return;
+
+        const expectedUrl = new URL(
+            `resources/${encodeURIComponent(resourceId)}.html`,
+            siteBaseUrl
+        ).href;
+
+        card.querySelectorAll('a.resource-detail-link').forEach((link) => {
+            if (link.href !== expectedUrl) link.href = expectedUrl;
+        });
+    });
+}
+
+normalizeResourceDetailLinks();
+
+if (window.MutationObserver && document.documentElement) {
+    const resourceLinkObserver = new MutationObserver((mutations) => {
+        mutations.forEach((mutation) => {
+            mutation.addedNodes.forEach((node) => {
+                if (node.nodeType === 1) normalizeResourceDetailLinks(node);
+            });
+        });
+    });
+
+    resourceLinkObserver.observe(document.documentElement, {
+        childList: true,
+        subtree: true
+    });
+}
 function ensureNadjahCore() {
     if (window.NadjahCore) return Promise.resolve(window.NadjahCore);
 
