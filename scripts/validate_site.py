@@ -365,10 +365,57 @@ def main() -> None:
         "search recovery actions need a visible keyboard focus state"
     )
 
+    # Phase 5: local user features, safe storage and share fallback.
+    user_state_js = (ROOT / "assets" / "js" / "user-state.js").read_text(encoding="utf-8")
+    my_page_js = (ROOT / "assets" / "js" / "my-page.js").read_text(encoding="utf-8")
+    my_page = BeautifulSoup((ROOT / "pages" / "my.html").read_text(encoding="utf-8"), "html.parser")
+    assert "function normalizeState(value)" in user_state_js, "local user data must be normalized before use"
+    assert "function clearRecent()" in user_state_js and "function clearMetrics()" in user_state_js, (
+        "users must be able to clear recent history and usage statistics separately"
+    )
+    assert "function isPersistent()" in user_state_js, "user hub must disclose temporary in-session storage"
+    assert "document.execCommand('copy')" in user_state_js, "sharing needs a clipboard fallback"
+    assert "user-card-remove" in my_page_js and "toggleFavorite(item.id)" in my_page_js, (
+        "users must be able to remove saved items directly from the favorites list"
+    )
+    assert "مسح سجل المشاهدة" in my_page_js and "مسح إحصاءات الاستخدام" in my_page_js, (
+        "user hub must expose independent history and metrics controls"
+    )
+    assert "title.textContent = item.title" in my_page_js, (
+        "user library cards must render resource titles as text rather than HTML"
+    )
+    for required_id in (
+        "clearUserData",
+        "prefCycle",
+        "prefLevel",
+        "prefSubject",
+        "prefSemester",
+        "favoritesGrid",
+        "recentGrid",
+        "viewsGrid",
+        "downloadsGrid",
+        "recommendationsGrid",
+    ):
+        assert my_page.find(id=required_id), ("user hub is missing a required control or section", required_id)
+
+    resource_pages = sorted((ROOT / "resources").glob("*.html"))
+    assert resource_pages, "resource detail pages must exist"
+    for resource_page in resource_pages:
+        soup = BeautifulSoup(resource_page.read_text(encoding="utf-8", errors="ignore"), "html.parser")
+        assert soup.select_one("main[data-resource-id]"), ("resource page must expose its resource id", resource_page)
+        assert soup.select_one(".related-resources .related-resource-list"), (
+            "resource page must preserve related resources",
+            resource_page,
+        )
+        assert any("user-state.js" in script.get("src", "") for script in soup.find_all("script", src=True)), (
+            "resource page must load local favorites/history/sharing features",
+            resource_page,
+        )
+
     print(
         f"Validation passed: {len(pages)} pages, "
         f"{len(resource_ids)} resources, {len(subject_ids)} subjects, "
-        f"{len(level_ids)} levels"
+        f"{len(level_ids)} levels; phase 5 user features checked"
     )
 
 
