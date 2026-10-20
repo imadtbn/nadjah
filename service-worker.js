@@ -108,10 +108,10 @@ self.addEventListener('fetch', (event) => {
   }
 
   const url = new URL(request.url);
-  const isJson = /\\.json$/i.test(url.pathname);
-  const isCssOrJs = /\\.(?:css|js)$/i.test(url.pathname);
+  const isJson = /\.json$/i.test(url.pathname);
+  const isCssOrJs = /\.(?:css|js)$/i.test(url.pathname);
   const isVersionedAsset = isCssOrJs && url.searchParams.has('v');
-  const isCacheFirstAsset = /\\.(?:png|jpg|jpeg|webp|svg|woff2?)$/i.test(url.pathname);
+  const isCacheFirstAsset = /\.(?:png|jpg|jpeg|webp|svg|woff2?)$/i.test(url.pathname);
 
   // JSON and content-versioned CSS/JS use stale-while-revalidate:
   // render from cache immediately, while refreshing the same URL in the background.
