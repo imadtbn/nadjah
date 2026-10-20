@@ -12,7 +12,9 @@
           return;
         }
 
-        core.loadResources().then(() => resolve(core.data)).catch(() => resolve(core.data));
+        core.loadResources()
+          .then((data) => resolve(data?.resources ? data : null))
+          .catch(() => resolve(null));
       };
 
       const waitForUser = () => {
@@ -82,6 +84,15 @@
   }
 
   waitForReady().then((data) => {
+    if (!data?.resources?.resources) {
+      const message = 'تعذر تحميل فهرس النماذج. تحقق من الاتصال ثم أعد فتح الصفحة.';
+      ['favoritesGrid', 'recentGrid', 'viewsGrid', 'downloadsGrid', 'recommendationsGrid'].forEach((name) => {
+        const target = ids(name);
+        if (target) empty(target, message);
+      });
+      return;
+    }
+
     const resources = data.resources.resources || [];
     const map = new Map(resources.map((item) => [item.id, item]));
     const cycle = ids('prefCycle');
