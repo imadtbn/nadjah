@@ -892,11 +892,24 @@
         initPwa();
         initLenisAndGsap();
         initStatistics();
-        const pdfLibraryScript = document.createElement('script');
-        pdfLibraryScript.src = new URL('pdf-library.js', coreBaseUrl).href;
-        pdfLibraryScript.defer = true;
-        pdfLibraryScript.dataset.pdfLibrary = 'true';
-        document.head.appendChild(pdfLibraryScript);
+        const driveConfigScript = document.createElement('script');
+        driveConfigScript.src = new URL('google-drive-config.js', coreBaseUrl).href;
+        driveConfigScript.dataset.googleDriveConfig = 'true';
+        driveConfigScript.onload = () => {
+            const pdfLibraryScript = document.createElement('script');
+            pdfLibraryScript.src = new URL('pdf-library.js', coreBaseUrl).href;
+            pdfLibraryScript.defer = true;
+            pdfLibraryScript.dataset.pdfLibrary = 'true';
+            document.head.appendChild(pdfLibraryScript);
+        };
+        driveConfigScript.onerror = () => {
+            const pdfLibraryScript = document.createElement('script');
+            pdfLibraryScript.src = new URL('pdf-library.js', coreBaseUrl).href;
+            pdfLibraryScript.defer = true;
+            pdfLibraryScript.dataset.pdfLibrary = 'true';
+            document.head.appendChild(pdfLibraryScript);
+        };
+        document.head.appendChild(driveConfigScript);
         initCustomCursor();
         initStarfield();
         initSmoothAnchors();
