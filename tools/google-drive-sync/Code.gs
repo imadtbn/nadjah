@@ -113,23 +113,14 @@ function buildManifest_() {
       const children = yearFolder.getFolders();
       while (children.hasNext()) {
         const child = children.next();
-        if (TERM_MAP[child.getName()]) {
-          collectSubject_(child, [yearLabel], cycleId, yearLabel, '', resources);
-        } else {
-          const branchOrSubject = child;
-          const subfolders = branchOrSubject.getFolders();
-          let hasSubjectFolders = false;
-          while (subfolders.hasNext()) { hasSubjectFolders = true; break; }
-          if (!hasSubjectFolders) continue;
-          // الثانوية: السنة / الشعبة / المادة / الفصل؛ الابتدائي والمتوسط: السنة / المادة / الفصل.
-          const branchName = cycleId === 'secondary' ? branchOrSubject.getName() : '';
-          const subjects = branchOrSubject.getFolders();
+        if (cycleId === 'secondary') {
+          const branchName = child.getName();
+          const subjects = child.getFolders();
           while (subjects.hasNext()) {
-            const subjectFolder = subjects.next();
-            collectSubject_(subjectFolder, [yearLabel], cycleId, yearLabel, branchName, resources);
+            collectSubject_(subjects.next(), [yearLabel], cycleId, yearLabel, branchName, resources);
           }
-          // المواد المباشرة في الابتدائي والمتوسط.
-          if (cycleId !== 'secondary') collectSubject_(branchOrSubject, [yearLabel], cycleId, yearLabel, '', resources);
+        } else {
+          collectSubject_(child, [yearLabel], cycleId, yearLabel, '', resources);
         }
       }
     }
@@ -138,7 +129,6 @@ function buildManifest_() {
   deduped.sort((a,b)=>a.cycleId.localeCompare(b.cycleId)||a.levelLabel.localeCompare(b.levelLabel,'ar')||a.subject.localeCompare(b.subject,'ar')||a.semester-b.semester||a.title.localeCompare(b.title,'ar'));
   return {schemaVersion:1,generatedAt:new Date().toISOString(),source:'Google Drive',count:deduped.length,resources:deduped};
 }
-
 function collectSubject_(subjectFolder, path, cycleId, levelLabel, branch, resources) {
   const terms = subjectFolder.getFolders();
   while (terms.hasNext()) {
