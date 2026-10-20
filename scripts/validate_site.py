@@ -138,6 +138,18 @@ def main() -> None:
         assert len(soup.find_all("title")) == 1, path
         assert len(soup.find_all("meta", attrs={"name": "description"})) == 1, path
 
+        shared_core = [
+            tag for tag in soup.find_all("script", src=True)
+            if tag["src"].split("?", 1)[0].split("#", 1)[0].rstrip("/").endswith("assets/js/core.js")
+        ]
+        shared_ux = [
+            tag for tag in soup.find_all("link", href=True)
+            if "stylesheet" in tag.get("rel", [])
+            and tag["href"].split("?", 1)[0].split("#", 1)[0].rstrip("/").endswith("assets/css/ux.css")
+        ]
+        assert len(shared_core) == 1, ("expected exactly one core.js reference", path, len(shared_core))
+        assert len(shared_ux) == 1, ("expected exactly one ux.css reference", path, len(shared_ux))
+
         canonical = soup.find("link", rel="canonical")
         assert canonical and canonical.get("href") == expected_url(path), (path, canonical)
         assert len(soup.find_all("meta", attrs={"property": "og:url"})) == 1, path
