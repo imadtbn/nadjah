@@ -158,7 +158,7 @@ function continueLibraryStructureVerification() {
       LIB_VERIFY_INDEX: String(index),
       LIB_VERIFY_COMPLETE: String(complete),
       LIB_VERIFY_MISSING_COUNT: String(missingCount)
-    }, true);
+    }, false);
   }
 
   if (index < plan.length) {
