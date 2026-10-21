@@ -102,6 +102,41 @@ function ensurePath_(root, path) {
   path.forEach(name => { folder = ensureFolder_(folder, name); });
 }
 
+/** يتحقق من اكتمال الهيكل دون إنشاء أو تعديل أي شيء في Drive. */
+function verifyLibraryStructure() {
+  const root = DriveApp.getFolderById(ROOT_FOLDER_ID);
+  const plan = buildFolderPlan_();
+  const missing = [];
+  let complete = 0;
+
+  plan.forEach(path => {
+    let folder = root;
+    let found = true;
+    for (let i = 0; i < path.length; i++) {
+      const matches = folder.getFoldersByName(path[i]);
+      if (!matches.hasNext()) {
+        missing.push(path.join(' / '));
+        found = false;
+        break;
+      }
+      folder = matches.next();
+    }
+    if (found) complete++;
+  });
+
+  const report = {
+    totalPaths: plan.length,
+    completePaths: complete,
+    missingCount: missing.length,
+    missingPaths: missing.slice(0, 150),
+    moreMissing: Math.max(0, missing.length - 150)
+  };
+  Logger.log(JSON.stringify(report, null, 2));
+  return 'نتيجة التحقق: ' + complete + ' من ' + plan.length +
+    ' مسارًا موجود. المسارات الناقصة: ' + missing.length +
+    (missing.length ? '. راجع سجل التنفيذ لمعرفة الأسماء.' : '. الهيكل مكتمل حسب القالب الحالي.');
+}
+
 /** يبدأ إنشاء الهيكل أو يعيد بدء الفهرس؛ لا يحذف أي مجلد أو ملف. */
 function setupLibraryStructure() {
   clearSetupTriggers_();
