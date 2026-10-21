@@ -53,39 +53,98 @@ function ensureFolder_(parent, name) {
   const matches = parent.getFoldersByName(name);
   return matches.hasNext() ? matches.next() : parent.createFolder(name);
 }
-function addSubjectTree_(yearFolder, subjectNames) {
-  subjectNames.forEach(subject => {
-    const subjectFolder = ensureFolder_(yearFolder, subject);
-    addTermTree_(subjectFolder);
+
+/** يبني قائمة مسارات ثابتة حتى يمكن استكمال الإنشاء من آخر نقطة محفوظة. */
+function buildFolderPlan_() {
+  const plan = [];
+  function add(path) { plan.push(path); }
+  function addSubject(yearPath, subjectNames) {
+    subjectNames.forEach(subject => {
+      const subjectPath = yearPath.concat([subject]);
+      add(subjectPath);
+      TERMS.forEach(term => {
+        const termPath = subjectPath.concat([term]);
+        add(termPath);
+        RESOURCE_FOLDERS.forEach(category => add(termPath.concat([category])));
+      });
+    });
+  }
+
+  add(['الطور الابتدائي']);
+  Object.keys(PRIMARY_SUBJECTS).forEach(year => {
+    const yearPath = ['الطور الابتدائي', year];
+    add(yearPath);
+    addSubject(yearPath, PRIMARY_SUBJECTS[year]);
   });
-}
-function addTermTree_(subjectFolder) {
-  TERMS.forEach(term => {
-    const termFolder = ensureFolder_(subjectFolder, term);
-    RESOURCE_FOLDERS.forEach(category => ensureFolder_(termFolder, category));
+
+  add(['الطور المتوسط']);
+  ['السنة الأولى','السنة الثانية','السنة الثالثة','السنة الرابعة'].forEach(year => {
+    const yearPath = ['الطور المتوسط', year];
+    add(yearPath);
+    addSubject(yearPath, MIDDLE_SUBJECTS);
   });
-}
 
-/**
- * شغّل هذه الدالة يدويًا مرة واحدة من محرر Apps Script.
- * تنشئ المجلدات الناقصة فقط ولا تحذف أو تعيد تسمية الملفات الموجودة.
- */
-function setupLibraryStructure() {
-  const root = DriveApp.getFolderById(ROOT_FOLDER_ID);
-  const primary = ensureFolder_(root, 'الطور الابتدائي');
-  Object.keys(PRIMARY_SUBJECTS).forEach(year => addSubjectTree_(ensureFolder_(primary, year), PRIMARY_SUBJECTS[year]));
-
-  const middle = ensureFolder_(root, 'الطور المتوسط');
-  ['السنة الأولى','السنة الثانية','السنة الثالثة','السنة الرابعة'].forEach(year => addSubjectTree_(ensureFolder_(middle, year), MIDDLE_SUBJECTS));
-
-  const secondary = ensureFolder_(root, 'الطور الثانوي');
+  add(['الطور الثانوي']);
   Object.keys(SECONDARY_BRANCHES).forEach(year => {
-    const yearFolder = ensureFolder_(secondary, year);
+    const yearPath = ['الطور الثانوي', year];
+    add(yearPath);
     Object.keys(SECONDARY_BRANCHES[year]).forEach(branch => {
-      addSubjectTree_(ensureFolder_(yearFolder, branch), SECONDARY_BRANCHES[year][branch]);
+      const branchPath = yearPath.concat([branch]);
+      add(branchPath);
+      addSubject(branchPath, SECONDARY_BRANCHES[year][branch]);
     });
   });
-  return 'اكتمل إنشاء الهيكل الموحد داخل مجلد مكتبة منصة النجاح.';
+  return plan;
+}
+
+function ensurePath_(root, path) {
+  let folder = root;
+  path.forEach(name => { folder = ensureFolder_(folder, name); });
+}
+
+/** يبدأ إنشاء الهيكل أو يعيد بدء الفهرس؛ لا يحذف أي مجلد أو ملف. */
+function setupLibraryStructure() {
+  clearSetupTriggers_();
+  PropertiesService.getScriptProperties().setProperty('LIBRARY_SETUP_INDEX', '0');
+  continueLibraryStructureSetup();
+}
+
+/** تكمل الإنشاء على دفعات لتفادي انتهاء مهلة Apps Script. */
+function continueLibraryStructureSetup() {
+  const started = Date.now();
+  const maxRunMs = 4 * 60 * 1000 + 15 * 1000;
+  const props = PropertiesService.getScriptProperties();
+  const root = DriveApp.getFolderById(ROOT_FOLDER_ID);
+  const plan = buildFolderPlan_();
+  let index = Number(props.getProperty('LIBRARY_SETUP_INDEX') || 0);
+
+  while (index < plan.length && Date.now() - started < maxRunMs) {
+    ensurePath_(root, plan[index]);
+    index++;
+    // حفظ التقدم باستمرار يسمح باستئناف آمن حتى لو توقف التنفيذ.
+    props.setProperty('LIBRARY_SETUP_INDEX', String(index));
+  }
+
+  if (index < plan.length) {
+    props.setProperty('LIBRARY_SETUP_INDEX', String(index));
+    clearSetupTriggers_();
+    ScriptApp.newTrigger('continueLibraryStructureSetup').timeBased().after(60 * 1000).create();
+    Logger.log('تم إنشاء جزء من الهيكل. التقدم: ' + index + ' / ' + plan.length + '. سيستمر تلقائيًا.');
+    return 'الإنشاء مستمر على دفعات: ' + index + ' / ' + plan.length;
+  }
+
+  props.deleteProperty('LIBRARY_SETUP_INDEX');
+  clearSetupTriggers_();
+  Logger.log('اكتمل إنشاء الهيكل. عدد المسارات التي تمت مراجعتها: ' + plan.length);
+  return 'اكتمل إنشاء الهيكل كاملًا. عدد المسارات التي تمت مراجعتها: ' + plan.length;
+}
+
+function clearSetupTriggers_() {
+  ScriptApp.getProjectTriggers().forEach(trigger => {
+    if (trigger.getHandlerFunction() === 'continueLibraryStructureSetup') {
+      ScriptApp.deleteTrigger(trigger);
+    }
+  });
 }
 
 function doGet(e) {
