@@ -102,39 +102,103 @@ function ensurePath_(root, path) {
   path.forEach(name => { folder = ensureFolder_(folder, name); });
 }
 
-/** يتحقق من اكتمال الهيكل دون إنشاء أو تعديل أي شيء في Drive. */
+/**
+ * يبدأ التحقق على دفعات صغيرة لتفادي حدّ مدة التنفيذ.
+ * شغّل هذه الدالة يدويًا مرة واحدة، ثم تابع النتيجة من سجل التنفيذ.
+ */
 function verifyLibraryStructure() {
+  const props = PropertiesService.getScriptProperties();
+  clearVerificationTriggers_();
+  Object.keys(props.getProperties()).forEach(key => {
+    if (key.indexOf('LIB_VERIFY_') === 0) props.deleteProperty(key);
+  });
+  props.setProperty('LIB_VERIFY_INDEX', '0');
+  props.setProperty('LIB_VERIFY_COMPLETE', '0');
+  props.setProperty('LIB_VERIFY_MISSING_COUNT', '0');
+  return continueLibraryStructureVerification();
+}
+
+/** يعالج عددًا محدودًا من المسارات، ويحفظ التقدم قبل إنهاء كل تشغيل. */
+function continueLibraryStructureVerification() {
+  const started = Date.now();
+  const maxRunMs = 2 * 60 * 1000;
+  const maxPathsPerRun = 12;
+  const props = PropertiesService.getScriptProperties();
   const root = DriveApp.getFolderById(ROOT_FOLDER_ID);
   const plan = buildFolderPlan_();
-  const missing = [];
-  let complete = 0;
+  let index = Number(props.getProperty('LIB_VERIFY_INDEX') || 0);
+  let complete = Number(props.getProperty('LIB_VERIFY_COMPLETE') || 0);
+  let missingCount = Number(props.getProperty('LIB_VERIFY_MISSING_COUNT') || 0);
+  let processed = 0;
 
-  plan.forEach(path => {
+  while (index < plan.length && processed < maxPathsPerRun && Date.now() - started < maxRunMs) {
+    const path = plan[index];
     let folder = root;
     let found = true;
     for (let i = 0; i < path.length; i++) {
       const matches = folder.getFoldersByName(path[i]);
       if (!matches.hasNext()) {
-        missing.push(path.join(' / '));
         found = false;
         break;
       }
       folder = matches.next();
     }
-    if (found) complete++;
-  });
 
+    if (found) {
+      complete++;
+    } else {
+      missingCount++;
+      props.setProperty('LIB_VERIFY_MISSING_' + String(missingCount).padStart(5, '0'), path.join(' / '));
+    }
+
+    index++;
+    processed++;
+    // حفظ التقدم بعد كل مسار يجعل الاستئناف آمنًا.
+    props.setProperties({
+      LIB_VERIFY_INDEX: String(index),
+      LIB_VERIFY_COMPLETE: String(complete),
+      LIB_VERIFY_MISSING_COUNT: String(missingCount)
+    }, true);
+  }
+
+  if (index < plan.length) {
+    clearVerificationTriggers_();
+    ScriptApp.newTrigger('continueLibraryStructureVerification').timeBased().after(60 * 1000).create();
+    const progress = 'التحقق جارٍ: ' + index + ' / ' + plan.length + ' مسارًا؛ الناقص حتى الآن: ' + missingCount;
+    Logger.log(progress);
+    return progress + '. سيستمر تلقائيًا على دفعات.';
+  }
+
+  clearVerificationTriggers_();
+  const allProps = props.getProperties();
+  const missing = Object.keys(allProps)
+    .filter(key => key.indexOf('LIB_VERIFY_MISSING_') === 0)
+    .sort()
+    .map(key => allProps[key]);
   const report = {
+    status: missingCount === 0 ? 'complete' : 'missing_folders_found',
     totalPaths: plan.length,
     completePaths: complete,
-    missingCount: missing.length,
-    missingPaths: missing.slice(0, 150),
-    moreMissing: Math.max(0, missing.length - 150)
+    missingCount: missingCount,
+    missingPaths: missing.slice(0, 100),
+    moreMissing: Math.max(0, missing.length - 100)
   };
-  Logger.log(JSON.stringify(report, null, 2));
-  return 'نتيجة التحقق: ' + complete + ' من ' + plan.length +
-    ' مسارًا موجود. المسارات الناقصة: ' + missing.length +
-    (missing.length ? '. راجع سجل التنفيذ لمعرفة الأسماء.' : '. الهيكل مكتمل حسب القالب الحالي.');
+  Logger.log('نتيجة التحقق النهائية:\n' + JSON.stringify(report, null, 2));
+  props.deleteProperty('LIB_VERIFY_INDEX');
+  props.deleteProperty('LIB_VERIFY_COMPLETE');
+  props.deleteProperty('LIB_VERIFY_MISSING_COUNT');
+  missing.forEach((_, i) => props.deleteProperty('LIB_VERIFY_MISSING_' + String(i + 1).padStart(5, '0')));
+  return missingCount === 0
+    ? 'اكتمل التحقق: جميع المسارات ' + plan.length + ' موجودة حسب القالب الحالي.'
+    : 'اكتمل التحقق: ' + complete + ' من ' + plan.length + ' مسارًا موجود؛ توجد ' + missingCount + ' مسارات ناقصة. راجع سجل التنفيذ.';
+}
+
+function clearVerificationTriggers_() {
+  ScriptApp.getProjectTriggers().forEach(trigger => {
+    if (trigger.getHandlerFunction() === 'continueLibraryStructureVerification') {
+      ScriptApp.deleteTrigger(trigger);
+    }
+  });
 }
 
 /** يبدأ إنشاء الهيكل أو يعيد بدء الفهرس؛ لا يحذف أي مجلد أو ملف. */
@@ -147,16 +211,18 @@ function setupLibraryStructure() {
 /** تكمل الإنشاء على دفعات لتفادي انتهاء مهلة Apps Script. */
 function continueLibraryStructureSetup() {
   const started = Date.now();
-  const maxRunMs = 4 * 60 * 1000 + 15 * 1000;
+  const maxRunMs = 2 * 60 * 1000;
+  const maxPathsPerRun = 12;
   const props = PropertiesService.getScriptProperties();
   const root = DriveApp.getFolderById(ROOT_FOLDER_ID);
   const plan = buildFolderPlan_();
   let index = Number(props.getProperty('LIBRARY_SETUP_INDEX') || 0);
+  let processed = 0;
 
-  while (index < plan.length && Date.now() - started < maxRunMs) {
+  while (index < plan.length && processed < maxPathsPerRun && Date.now() - started < maxRunMs) {
     ensurePath_(root, plan[index]);
     index++;
-    // حفظ التقدم باستمرار يسمح باستئناف آمن حتى لو توقف التنفيذ.
+    processed++;
     props.setProperty('LIBRARY_SETUP_INDEX', String(index));
   }
 
