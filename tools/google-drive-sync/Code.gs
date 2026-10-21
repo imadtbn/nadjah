@@ -121,8 +121,8 @@ function verifyLibraryStructure() {
 /** يعالج عددًا محدودًا من المسارات، ويحفظ التقدم قبل إنهاء كل تشغيل. */
 function continueLibraryStructureVerification() {
   const started = Date.now();
-  const maxRunMs = 2 * 60 * 1000;
-  const maxPathsPerRun = 12;
+  const maxRunMs = 4 * 60 * 1000;
+  const maxPathsPerRun = 40;
   const props = PropertiesService.getScriptProperties();
   const root = DriveApp.getFolderById(ROOT_FOLDER_ID);
   const plan = buildFolderPlan_();
