@@ -503,3 +503,54 @@ function levelCode_(label) {
   if (!m) return '';
   return m[0].replace(/[٠-٩]/g,d=>'٠١٢٣٤٥٦٧٨٩'.indexOf(d)).padStart(2,'0');
 }
+
+/**
+ * تشخيص سبب انخفاض عدد الموارد: يحصي ملفات PDF وغير PDF داخل مجلدات التصنيف.
+ * شغّل diagnoseLibraryFiles يدويًا، ثم راجع سجل التنفيذ.
+ */
+function diagnoseLibraryFiles() {
+  const root = DriveApp.getFolderById(ROOT_FOLDER_ID);
+  const plan = buildFolderPlan_().filter(path =>
+    RESOURCE_FOLDERS.indexOf(path[path.length - 1]) !== -1
+  );
+  const report = {
+    categoryFoldersPlanned: plan.length,
+    categoryFoldersFound: 0,
+    categoryFoldersMissing: 0,
+    totalFiles: 0,
+    pdfFiles: 0,
+    nonPdfFiles: 0,
+    examples: []
+  };
+
+  plan.forEach(path => {
+    const folder = findFolderPath_(root, path);
+    if (!folder) {
+      report.categoryFoldersMissing++;
+      return;
+    }
+    report.categoryFoldersFound++;
+    const files = folder.getFiles();
+    while (files.hasNext()) {
+      const file = files.next();
+      if (file.isTrashed()) continue;
+      report.totalFiles++;
+      if (file.getMimeType() === MimeType.PDF) {
+        report.pdfFiles++;
+      } else {
+        report.nonPdfFiles++;
+      }
+      if (report.examples.length < 30) {
+        report.examples.push({
+          path: path.join(' / '),
+          name: file.getName(),
+          mimeType: file.getMimeType()
+        });
+      }
+    }
+  });
+
+  Logger.log('تقرير تشخيص ملفات المكتبة:\n' + JSON.stringify(report, null, 2));
+  return report;
+}
+
