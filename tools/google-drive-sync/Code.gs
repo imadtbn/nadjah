@@ -248,47 +248,226 @@ function clearSetupTriggers_() {
   });
 }
 
+/**
+ * يبدأ إنشاء فهرس PDF على دفعات. شغّل startManifestBuild يدويًا مرة واحدة
+ * بعد نشر هذا الإصدار، ثم اترك المشغّلات تكمل البناء تلقائيًا.
+ */
+function startManifestBuild() {
+  clearManifestTriggers_();
+  const props = PropertiesService.getScriptProperties();
+  const root = DriveApp.getFolderById(ROOT_FOLDER_ID);
+  const cacheFolder = ensureFolder_(root, '_nadjah_manifest_cache');
+  const files = cacheFolder.getFiles();
+  while (files.hasNext()) {
+    const file = files.next();
+    if (file.getName().indexOf('_nadjah_manifest_chunk_') === 0) file.setTrashed(true);
+  }
+
+  Object.keys(props.getProperties()).forEach(key => {
+    if (key.indexOf('LIB_MANIFEST_') === 0 && key !== 'LIB_MANIFEST_FILE_ID') props.deleteProperty(key);
+  });
+
+  const plan = buildFolderPlan_().filter(path =>
+    RESOURCE_FOLDERS.indexOf(path[path.length - 1]) !== -1
+  );
+  props.setProperty('LIB_MANIFEST_INDEX', '0');
+  props.setProperty('LIB_MANIFEST_TOTAL', String(plan.length));
+  props.setProperty('LIB_MANIFEST_CHUNK_COUNT', '0');
+  props.setProperty('LIB_MANIFEST_CACHE_FOLDER_ID', cacheFolder.getId());
+  Logger.log('بدأ بناء فهرس الموارد على دفعات: ' + plan.length + ' مجلد تصنيف.');
+  return continueManifestBuild();
+}
+
+/** تفهرس عددًا محدودًا من مجلدات الموارد وتحفظ كل دفعة في ملف مستقل. */
+function continueManifestBuild() {
+  const started = Date.now();
+  const maxRunMs = 4 * 60 * 1000;
+  const maxCategoriesPerRun = 20;
+  const props = PropertiesService.getScriptProperties();
+  const root = DriveApp.getFolderById(ROOT_FOLDER_ID);
+  const cacheFolder = DriveApp.getFolderById(props.getProperty('LIB_MANIFEST_CACHE_FOLDER_ID'));
+  const plan = buildFolderPlan_().filter(path =>
+    RESOURCE_FOLDERS.indexOf(path[path.length - 1]) !== -1
+  );
+  let index = Number(props.getProperty('LIB_MANIFEST_INDEX') || 0);
+  let chunkCount = Number(props.getProperty('LIB_MANIFEST_CHUNK_COUNT') || 0);
+  let processed = 0;
+  const resources = [];
+
+  while (index < plan.length && processed < maxCategoriesPerRun && Date.now() - started < maxRunMs) {
+    const path = plan[index];
+    const folder = findFolderPath_(root, path);
+    if (folder) collectCategoryFiles_(folder, path, resources);
+    index++;
+    processed++;
+    props.setProperties({
+      LIB_MANIFEST_INDEX: String(index),
+      LIB_MANIFEST_CHUNK_COUNT: String(chunkCount)
+    }, false);
+  }
+
+  if (resources.length) {
+    chunkCount++;
+    const chunkName = '_nadjah_manifest_chunk_' + String(chunkCount).padStart(4, '0') + '.json';
+    cacheFolder.createFile(chunkName, JSON.stringify(resources), MimeType.PLAIN_TEXT);
+    props.setProperties({
+      LIB_MANIFEST_CHUNK_COUNT: String(chunkCount),
+      LIB_MANIFEST_INDEX: String(index)
+    }, false);
+  }
+
+  if (index < plan.length) {
+    clearManifestTriggers_();
+    ScriptApp.newTrigger('continueManifestBuild').timeBased().after(60 * 1000).create();
+    const progress = 'فهرسة الموارد: ' + index + ' / ' + plan.length + ' مجلد تصنيف؛ الموارد المفهرسة حتى الآن: تُحفظ على دفعات.';
+    Logger.log(progress);
+    return progress;
+  }
+
+  // تجميع ملفات الدفعات في ملف JSON واحد؛ لا تُقرأ مجلدات الموارد مجددًا عند طلب الموقع.
+  const allResources = [];
+  for (let i = 1; i <= chunkCount; i++) {
+    const chunkName = '_nadjah_manifest_chunk_' + String(i).padStart(4, '0') + '.json';
+    const matches = cacheFolder.getFilesByName(chunkName);
+    if (matches.hasNext()) {
+      const parsed = JSON.parse(matches.next().getBlob().getDataAsString('UTF-8'));
+      Array.prototype.push.apply(allResources, parsed);
+    }
+  }
+  const deduped = Array.from(new Map(allResources.map(item => [item.id, item])).values());
+  deduped.sort((a,b) =>
+    a.cycleId.localeCompare(b.cycleId) ||
+    a.levelLabel.localeCompare(b.levelLabel, 'ar') ||
+    a.subject.localeCompare(b.subject, 'ar') ||
+    a.semester - b.semester ||
+    a.title.localeCompare(b.title, 'ar')
+  );
+  const manifest = {
+    schemaVersion: 1,
+    generatedAt: new Date().toISOString(),
+    source: 'Google Drive',
+    count: deduped.length,
+    resources: deduped
+  };
+  const json = JSON.stringify(manifest);
+  let manifestFile;
+  const existingId = props.getProperty('LIB_MANIFEST_FILE_ID');
+  if (existingId) {
+    try { manifestFile = DriveApp.getFileById(existingId); } catch (err) {}
+  }
+  if (manifestFile) {
+    manifestFile.setContent(json);
+    manifestFile.setName('_nadjah_manifest.json');
+  } else {
+    manifestFile = cacheFolder.createFile('_nadjah_manifest.json', json, MimeType.PLAIN_TEXT);
+    props.setProperty('LIB_MANIFEST_FILE_ID', manifestFile.getId());
+  }
+
+  // حذف ملفات الدفعات المؤقتة بعد حفظ الفهرس النهائي.
+  const tempFiles = cacheFolder.getFiles();
+  while (tempFiles.hasNext()) {
+    const file = tempFiles.next();
+    if (file.getName().indexOf('_nadjah_manifest_chunk_') === 0) file.setTrashed(true);
+  }
+  props.setProperty('LIB_MANIFEST_COUNT', String(deduped.length));
+  props.setProperty('LIB_MANIFEST_GENERATED_AT', manifest.generatedAt);
+  props.deleteProperty('LIB_MANIFEST_INDEX');
+  props.deleteProperty('LIB_MANIFEST_TOTAL');
+  props.deleteProperty('LIB_MANIFEST_CHUNK_COUNT');
+  clearManifestTriggers_();
+  Logger.log('اكتمل بناء الفهرس. عدد الموارد: ' + deduped.length + '؛ ملف الفهرس محفوظ في Google Drive.');
+  return 'اكتمل بناء الفهرس. عدد الموارد: ' + deduped.length;
+}
+
+function findFolderPath_(root, path) {
+  let folder = root;
+  for (let i = 0; i < path.length; i++) {
+    const matches = folder.getFoldersByName(path[i]);
+    if (!matches.hasNext()) return null;
+    folder = matches.next();
+  }
+  return folder;
+}
+
+function collectCategoryFiles_(categoryFolder, path, resources) {
+  const cycleId = CYCLE_MAP[path[0]];
+  const levelLabel = path[1] || '';
+  const secondary = cycleId === 'secondary';
+  const branch = secondary ? (path.length === 6 ? path[2] : '') : '';
+  const subject = secondary ? path[path.length - 3] : path[path.length - 3];
+  const termName = path[path.length - 2];
+  const semester = TERM_MAP[termName];
+  const type = TYPE_MAP[path[path.length - 1]] || 'resource';
+  const files = categoryFolder.getFiles();
+  while (files.hasNext()) {
+    const file = files.next();
+    if (file.isTrashed() || file.getMimeType() !== MimeType.PDF) continue;
+    const id = file.getId();
+    const title = file.getName().replace(/\\.pdf$/i, '').replace(/[_-]+/g, ' ').trim();
+    resources.push({
+      id: 'drive-' + id,
+      title: title,
+      type: type,
+      cycleId: cycleId,
+      subject: subject,
+      semester: semester,
+      corrected: /تصحيح|حل نموذجي|الحل/i.test(title) || type === 'correction',
+      previewUrl: 'https://drive.google.com/file/d/' + id + '/preview',
+      downloadUrl: 'https://drive.google.com/file/d/' + id + '/view?usp=sharing',
+      source: 'Google Drive',
+      driveFileId: id,
+      levelLabel: levelLabel,
+      levelCode: levelCode_(levelLabel),
+      branch: branch,
+      meta: ['Google Drive', 'PDF'],
+      page: '',
+      pageTitle: title,
+      breadcrumb: [cycleId, levelLabel].concat(branch ? [branch] : []).concat([subject, termName, path[path.length - 1]])
+    });
+  }
+}
+
+function clearManifestTriggers_() {
+  ScriptApp.getProjectTriggers().forEach(trigger => {
+    if (trigger.getHandlerFunction() === 'continueManifestBuild') ScriptApp.deleteTrigger(trigger);
+  });
+}
+
+/** يعيد الفهرس الجاهز فقط؛ لا يعيد مسح المكتبة عند كل طلب. */
 function doGet(e) {
-  const data = buildManifest_();
+  const props = PropertiesService.getScriptProperties();
+  const manifestId = props.getProperty('LIB_MANIFEST_FILE_ID');
+  let json;
+  if (manifestId) {
+    try {
+      json = DriveApp.getFileById(manifestId).getBlob().getDataAsString('UTF-8');
+    } catch (err) {
+      json = JSON.stringify({
+        schemaVersion: 1,
+        source: 'Google Drive',
+        count: 0,
+        resources: [],
+        error: 'تعذر قراءة ملف الفهرس المحفوظ. شغّل startManifestBuild من Apps Script.'
+      });
+    }
+  } else {
+    json = JSON.stringify({
+      schemaVersion: 1,
+      source: 'Google Drive',
+      count: 0,
+      resources: [],
+      status: 'index_not_built',
+      message: 'شغّل startManifestBuild من Apps Script أولًا، ثم أعد المحاولة بعد اكتمال البناء.'
+    });
+  }
   const callback = e && e.parameter && e.parameter.callback;
-  const json = JSON.stringify(data);
-  if (callback && /^[A-Za-z_$][0-9A-Za-z_$\.]*$/.test(callback)) {
-    return ContentService.createTextOutput(callback + '(' + json + ');').setMimeType(ContentService.MimeType.JAVASCRIPT);
+  if (callback && /^[A-Za-z_$][0-9A-Za-z_$\\.]*$/.test(callback)) {
+    return ContentService.createTextOutput(callback + '(' + json + ');')
+      .setMimeType(ContentService.MimeType.JAVASCRIPT);
   }
   return ContentService.createTextOutput(json).setMimeType(ContentService.MimeType.JSON);
 }
 
-function buildManifest_() {
-  const root = DriveApp.getFolderById(ROOT_FOLDER_ID);
-  const resources = [];
-  const cycles = root.getFolders();
-  while (cycles.hasNext()) {
-    const cycleFolder = cycles.next();
-    const cycleId = CYCLE_MAP[cycleFolder.getName()];
-    if (!cycleId) continue;
-    const years = cycleFolder.getFolders();
-    while (years.hasNext()) {
-      const yearFolder = years.next();
-      const yearLabel = yearFolder.getName();
-      const children = yearFolder.getFolders();
-      while (children.hasNext()) {
-        const child = children.next();
-        if (cycleId === 'secondary') {
-          const branchName = child.getName();
-          const subjects = child.getFolders();
-          while (subjects.hasNext()) {
-            collectSubject_(subjects.next(), [yearLabel], cycleId, yearLabel, branchName, resources);
-          }
-        } else {
-          collectSubject_(child, [yearLabel], cycleId, yearLabel, '', resources);
-        }
-      }
-    }
-  }
-  const deduped = Array.from(new Map(resources.map(item => [item.id, item])).values());
-  deduped.sort((a,b)=>a.cycleId.localeCompare(b.cycleId)||a.levelLabel.localeCompare(b.levelLabel,'ar')||a.subject.localeCompare(b.subject,'ar')||a.semester-b.semester||a.title.localeCompare(b.title,'ar'));
-  return {schemaVersion:1,generatedAt:new Date().toISOString(),source:'Google Drive',count:deduped.length,resources:deduped};
-}
 function collectSubject_(subjectFolder, path, cycleId, levelLabel, branch, resources) {
   const terms = subjectFolder.getFolders();
   while (terms.hasNext()) {
