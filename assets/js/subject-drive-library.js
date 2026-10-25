@@ -62,7 +62,7 @@ function load(){
  const cb='NadjahSubjectFeed_'+Date.now();
  const tag=document.createElement('script'); let done=false;
  const timer=setTimeout(()=>finish(false),12000);
- function finish(ok,data){if(done)return;done=true;clearTimeout(timer);try{delete window[cb]}catch{}tag.remove();if(ok){const items=Array.isArray(data?.resources)?data.resources:Array.isArray(data?.files)?data.files:[];render(items);}else document.querySelectorAll('.documents-grid[id^="latest-documents-"]').forEach(g=>g.innerHTML='<div class="loading-docs">تعذر تحميل النماذج من المكتبة. يرجى المحاولة لاحقًا.</div>');}
+ function finish(ok,data){if(done)return;done=true;clearTimeout(timer);try{delete window[cb]}catch{}tag.remove();const grids=document.querySelectorAll('.documents-grid[id^="latest-documents-"]');if(!ok){grids.forEach(g=>g.innerHTML='<div class="loading-docs">تعذر تحميل النماذج من المكتبة. يرجى المحاولة لاحقًا.</div>');return;}try{const items=Array.isArray(data?.resources)?data.resources:Array.isArray(data?.files)?data.files:[];if(!Array.isArray(data?.resources)&&!Array.isArray(data?.files)){throw new Error('صيغة بيانات المكتبة غير صحيحة');}render(items);}catch(error){console.error('Nadjah Drive library rendering failed:',error);grids.forEach(g=>g.innerHTML='<div class="loading-docs">تعذر عرض النماذج بسبب خطأ في بيانات المكتبة. يرجى مراجعة الفهرس.</div>');}}
  window[cb]=data=>finish(true,data);
  tag.onerror=()=>finish(false);
  tag.src=endpoint+(endpoint.includes('?')?'&':'?')+'callback='+encodeURIComponent(cb)+'&v='+Date.now();
