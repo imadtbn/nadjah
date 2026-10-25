@@ -334,65 +334,7 @@
 </div>
 </div>
 <script defer="" src="../../../assets/js/modul.js "></script>
-<script>
-        async function loadDocuments(file, containerId) {
-
-            try {
-
-                const response = await fetch(file);
-
-                if (!response.ok) {
-                    throw new Error(`HTTP Error: ${response.status}`);
-                }
-
-                const html = await response.text();
-
-                const parser = new DOMParser();
-
-                const doc = parser.parseFromString(html, 'text/html');
-
-                const cards = doc.querySelectorAll('.doc-card');
-
-                const container =
-                    document.getElementById(containerId);
-
-                container.innerHTML = '';
-
-                [...cards]
-                    .slice(0, 6)
-                    .forEach(card => {
-
-                        container.appendChild(
-                            card.cloneNode(true)
-                        );
-
-                    });
-
-            } catch (error) {
-
-                console.error(
-                    `خطأ في تحميل ${file}`,
-                    error
-                );
-
-            }
-        }
-
-        loadDocuments(
-            'smst1/arabic-middle01-sem01-more.html',
-            'latest-documents-1'
-        );
-
-        loadDocuments(
-            'smst2/arabic-middle01-sem02-more.html',
-            'latest-documents-2'
-        );
-
-        loadDocuments(
-            'smst3/arabic-middle01-sem03-more.html',
-            'latest-documents-3'
-        );
-    </script>
+<script defer src="../../../assets/js/subject-drive-library.js?v=1"></script>
 <script data-nadjah-core="true" defer="" src="../../../assets/js/core.js?v=6458124125"></script>
 </body>
 </html>
