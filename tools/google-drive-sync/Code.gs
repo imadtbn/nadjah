@@ -403,7 +403,7 @@ function collectCategoryFiles_(categoryFolder, path, resources) {
     const file = files.next();
     if (file.isTrashed() || file.getMimeType() !== MimeType.PDF) continue;
     const id = file.getId();
-    const title = file.getName().replace(/\\.pdf$/i, '').replace(/[_-]+/g, ' ').trim();
+    const title = file.getName().replace(/\.pdf$/i, '').replace(/[_-]+/g, ' ').trim();
     resources.push({
       id: 'drive-' + id,
       title: title,
