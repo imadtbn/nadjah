@@ -3,7 +3,7 @@
 if (window.NadjahSubjectDriveLoaded) return;
 window.NadjahSubjectDriveLoaded = true;
 const current = document.currentScript;
-const base = new URL('../../../', current.src);
+const base = new URL('../../', current.src);
 const config = new URL('assets/js/google-drive-config.js', base);
 const norm = value => String(value || '').toLowerCase().normalize('NFKD')
  .replace(/[\u064B-\u065F\u0670]/g,'').replace(/[إأآٱ]/g,'ا').replace(/ى/g,'ي')
