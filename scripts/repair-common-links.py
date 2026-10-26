@@ -32,6 +32,8 @@ def replacement(src, raw, existing):
                 suffix="preparation"; folder=Path(*parts[:i+1]); break
             if p.startswith("modul-primry"):
                 suffix=p.replace("modul-",""); folder=Path(*parts[:i+1]); break
+            if p == "modul-secondary01":
+                suffix="secondary01"; folder=Path(*parts[:i+1]); break
             if p.startswith("modul-middle"):
                 suffix=p.replace("modul-",""); folder=Path(*parts[:i+1]); break
         if folder and suffix:
