@@ -20,7 +20,7 @@ def resolve(src, raw):
  if not path: return None
  if path.startswith("/nadjah/"): path=path[len("/nadjah/"):]
  elif path.startswith("/"): path=path.lstrip("/")
- else: path=(src.parent/path).as_posix()
+ else: path=(src.relative_to(ROOT).parent/path).as_posix()
  return Path(os.path.normpath(path)).as_posix()
 for src in files:
  try: text=src.read_text(encoding="utf-8",errors="replace")
