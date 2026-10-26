@@ -10,7 +10,7 @@ CSS=re.compile(r'''(?is)url\(\s*["']?([^)"']+)''')
 IMPORT=re.compile(r'''(?m)(?:import\s+(?:[^;]*?\s+from\s+)?|import\()\s*["']([^"']+\.(?:js|mjs|css))["']''')
 results={"scanned_files":0,"broken_internal_links":[],"missing_expected_pages":[],"sitemap_missing_pages":[],"stale_archive_links":[]}
 files=[p for p in ROOT.rglob("*") if p.is_file() and ".git" not in p.parts and p.suffix.lower() in {".html",".htm",".js",".mjs",".css",".xml"}]
-existing={p.relative_to(ROOT).as_posix() for p in files}
+existing={p.relative_to(ROOT).as_posix() for p in ROOT.rglob("*") if p.is_file() and ".git" not in p.parts}
 pages=[p for p in files if p.suffix.lower() in {".html",".htm"}]
 def dec(v): return html.unescape(v.strip())
 def resolve(src, raw):
