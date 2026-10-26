@@ -28,9 +28,11 @@ def replacement(src, raw, existing):
         parts=src.relative_to(ROOT).parts
         folder=None; suffix=None
         for i,p in enumerate(parts):
-            if p.startswith("modul-primry") and len(p)>=14:
+            if p == "modul-preparation":
+                suffix="preparation"; folder=Path(*parts[:i+1]); break
+            if p.startswith("modul-primry"):
                 suffix=p.replace("modul-",""); folder=Path(*parts[:i+1]); break
-            if p.startswith("modul-middle") and len(p)>=14:
+            if p.startswith("modul-middle"):
                 suffix=p.replace("modul-",""); folder=Path(*parts[:i+1]); break
         if folder and suffix:
             candidate=(folder/f"{subject}-{suffix}.html").as_posix()
@@ -45,7 +47,7 @@ def replacement(src, raw, existing):
             except ValueError: candidate_rel=""
             if candidate_rel in existing: return rel_url(src,candidate)
     # A common old root/section route should point to the current levels index.
-    if target_rel in {"levels/levels.html","levels.html"} and "pages/levels.html" in existing:
+    if Path(path).name == "levels.html" and "pages/levels.html" in existing:
         return rel_url(src,ROOT/"pages/levels.html")
     return None
 existing={p.relative_to(ROOT).as_posix() for p in ROOT.rglob("*") if p.is_file() and ".git" not in p.parts}
