@@ -10,6 +10,9 @@ const norm = value => String(value || '').toLowerCase().normalize('NFKD')
  .replace(/ؤ/g,'و').replace(/ئ/g,'ي').replace(/ة/g,'ه').replace(/[^\p{L}\p{N}\s]/gu,' ')
  .replace(/\s+/g,' ').trim();
 const typeLabels = {homework:'فرض',exam:'اختبار',exercise:'تمرين',revision:'مراجعة',lesson:'درس',summary:'ملخص',correction:'تصحيح'};
+const CACHE_KEY = 'nadjah-drive-manifest-v1';
+const CACHE_TTL = 10 * 60 * 1000;
+let renderedFromCache = false;
 const levelWords = {'الأولى':'1','الأول':'1','الثانية':'2','الثاني':'2','الثالثة':'3','الثالث':'3','الرابعة':'4','الرابع':'4','الخامسة':'5','الخامس':'5','السادسة':'6','السادس':'6'};
 function pageContext(){
  const path = location.pathname;
@@ -56,17 +59,48 @@ function render(items){
  if(rate) rate.innerHTML+(filtered.length?'':'');
 }
 function escapeHtml(v){return String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
+function showLoadError(message){
+ document.querySelectorAll('.documents-grid[id^="latest-documents-"]').forEach(grid=>{
+  if(!renderedFromCache) grid.innerHTML='<div class="loading-docs">'+escapeHtml(message)+'</div>';
+ });
+}
 function load(){
  const endpoint=String(window.NADJAH_DRIVE_FEED_URL||'').trim();
- if(!endpoint) return;
- const cb='NadjahSubjectFeed_'+Date.now();
+ if(!endpoint){showLoadError('مصدر مكتبة النماذج غير مضبوط حاليًا.');return;}
+ try{
+  const cached=JSON.parse(sessionStorage.getItem(CACHE_KEY)||'null');
+  if(cached&&Array.isArray(cached.items)&&Date.now()-cached.savedAt<CACHE_TTL){
+   render(cached.items);
+   renderedFromCache=true;
+  }
+ }catch(error){/* Cache is optional; continue with the live feed. */}
+ const cb='NadjahSubjectFeed_'+Date.now()+'_'+Math.random().toString(36).slice(2,8);
  const tag=document.createElement('script'); let done=false;
  const timer=setTimeout(()=>finish(false),12000);
- function finish(ok,data){if(done)return;done=true;clearTimeout(timer);try{delete window[cb]}catch{}tag.remove();const grids=document.querySelectorAll('.documents-grid[id^="latest-documents-"]');if(!ok){grids.forEach(g=>g.innerHTML='<div class="loading-docs">تعذر تحميل النماذج من المكتبة. يرجى المحاولة لاحقًا.</div>');return;}try{const items=Array.isArray(data?.resources)?data.resources:Array.isArray(data?.files)?data.files:[];if(!Array.isArray(data?.resources)&&!Array.isArray(data?.files)){throw new Error('صيغة بيانات المكتبة غير صحيحة');}render(items);}catch(error){console.error('Nadjah Drive library rendering failed:',error);grids.forEach(g=>g.innerHTML='<div class="loading-docs">تعذر عرض النماذج بسبب خطأ في بيانات المكتبة. يرجى مراجعة الفهرس.</div>');}}
+ function finish(ok,data){
+  if(done)return;done=true;clearTimeout(timer);
+  try{delete window[cb]}catch{}
+  tag.remove();
+  if(!ok){if(!renderedFromCache)showLoadError('تعذر تحميل النماذج من المكتبة. تحقق من الاتصال ثم أعد المحاولة.');return;}
+  try{
+   const items=Array.isArray(data?.resources)?data.resources:Array.isArray(data?.files)?data.files:null;
+   if(!items)throw new Error('صيغة بيانات المكتبة غير صحيحة');
+   render(items);
+   renderedFromCache=false;
+   try{sessionStorage.setItem(CACHE_KEY,JSON.stringify({savedAt:Date.now(),items}));}catch(error){/* Storage limits must not block resource display. */}
+  }catch(error){
+   console.error('Nadjah Drive library rendering failed:',error);
+   if(!renderedFromCache)showLoadError('تعذر عرض النماذج بسبب خطأ في بيانات المكتبة.');
+  }
+ }
  window[cb]=data=>finish(true,data);
  tag.onerror=()=>finish(false);
  tag.src=endpoint+(endpoint.includes('?')?'&':'?')+'callback='+encodeURIComponent(cb)+'&v='+Date.now();
  document.head.appendChild(tag);
 }
-const configTag=document.createElement('script');configTag.src=config.href;configTag.onload=load;configTag.onerror=()=>console.error('تعذر تحميل إعداد مكتبة Google Drive');document.head.appendChild(configTag);
+const configTag=document.createElement('script');
+configTag.src=config.href;
+configTag.onload=load;
+configTag.onerror=()=>showLoadError('تعذر تحميل إعداد مكتبة النماذج.');
+document.head.appendChild(configTag);
 })();
