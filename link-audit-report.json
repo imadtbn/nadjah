@@ -1,0 +1,369 @@
+{
+  "scanned_files": 651,
+  "broken_internal_links": [
+    {
+      "from": "index.html",
+      "to": "levels/middle/middle-bem.html",
+      "raw": "levels/middle/middle-bem.html",
+      "kind": "attribute"
+    },
+    {
+      "from": "pages/branch.html",
+      "to": "levels/branch/Mathematiques.html",
+      "raw": "../levels/branch/Mathematiques.html",
+      "kind": "attribute"
+    },
+    {
+      "from": "pages/branch.html",
+      "to": "levels/branch/tech-Mathematiques.html",
+      "raw": "../levels/branch/tech-Mathematiques.html",
+      "kind": "attribute"
+    },
+    {
+      "from": "pages/branch.html",
+      "to": "levels/branch/gest-econ.html",
+      "raw": "../levels/branch/gest-econ.html",
+      "kind": "attribute"
+    },
+    {
+      "from": "pages/branch.html",
+      "to": "levels/branch/Sc-technologies.html",
+      "raw": "../levels/branch/Sc-technologies.html",
+      "kind": "attribute"
+    },
+    {
+      "from": "pages/branch.html",
+      "to": "levels/branch/Littérature-philosophie.html",
+      "raw": "../levels/branch/Littérature-philosophie.html",
+      "kind": "attribute"
+    },
+    {
+      "from": "pages/branch.html",
+      "to": "levels/branch/Lang-etrang.html",
+      "raw": "../levels/branch/Lang-etrang.html",
+      "kind": "attribute"
+    },
+    {
+      "from": "pages/guide.html",
+      "to": "pages/levels/primary/pri01.html",
+      "raw": "levels/primary/pri01.html",
+      "kind": "attribute"
+    },
+    {
+      "from": "pages/guide.html",
+      "to": "pages/primary/primry01.html",
+      "raw": "primary/primry01.html",
+      "kind": "attribute"
+    },
+    {
+      "from": "pages/guide.html",
+      "to": "pages/reveal/primary/primry01.html",
+      "raw": "reveal/primary/primry01.html",
+      "kind": "attribute"
+    },
+    {
+      "from": "pages/levels.html",
+      "to": "levels/middle/middle-bem.html",
+      "raw": "../levels/middle/middle-bem.html",
+      "kind": "attribute"
+    },
+    {
+      "from": "levels/branch/subjects/sc-experimentales03.html",
+      "to": "levels/branch/subjects/modul-Scienc-exactes1/arabic-sc-experimentales03.html",
+      "raw": "modul-Scienc-exactes1/arabic-sc-experimentales03.html",
+      "kind": "attribute"
+    },
+    {
+      "from": "levels/branch/subjects/sc-experimentales03.html",
+      "to": "levels/branch/subjects/modul-Scienc-exactes1/math-sc-experimentales03.html",
+      "raw": "modul-Scienc-exactes1/math-sc-experimentales03.html",
+      "kind": "attribute"
+    },
+    {
+      "from": "levels/branch/subjects/Scienc-exactes1.html",
+      "to": "levels/branch/subjects/modul-Scienc-exactes1/arabic-Scienc-exactes1.html",
+      "raw": "modul-Scienc-exactes1/arabic-Scienc-exactes1.html",
+      "kind": "attribute"
+    },
+    {
+      "from": "levels/branch/subjects/Scienc-exactes1.html",
+      "to": "levels/branch/subjects/modul-Scienc-exactes1/math-Scienc-exactes1.html",
+      "raw": "modul-Scienc-exactes1/math-Scienc-exactes1.html",
+      "kind": "attribute"
+    },
+    {
+      "from": "levels/branch/subjects/sc-experimentales02.html",
+      "to": "levels/branch/subjects/modul-Scienc-exactes1/arabic-sc-experimentales02.html",
+      "raw": "modul-Scienc-exactes1/arabic-sc-experimentales02.html",
+      "kind": "attribute"
+    },
+    {
+      "from": "levels/branch/subjects/sc-experimentales02.html",
+      "to": "levels/branch/subjects/modul-Scienc-exactes1/math-sc-experimentales02.html",
+      "raw": "modul-Scienc-exactes1/math-sc-experimentales02.html",
+      "kind": "attribute"
+    },
+    {
+      "from": "levels/branch/subjects/modul-Scienc-exactes1/arabic-sc-experimentales01.html",
+      "to": "levels/branch/subjects/modul-Scienc-exactes1/math-middle01.html",
+      "raw": "math-middle01.html",
+      "kind": "attribute"
+    },
+    {
+      "from": "levels/branch/subjects/modul-Scienc-exactes1/arabic-sc-experimentales01.html",
+      "to": "levels/branch/subjects/modul-Scienc-exactes1/Primary01_science.html",
+      "raw": "Primary01_science.html",
+      "kind": "attribute"
+    },
+    {
+      "from": "levels/branch/subjects/modul-Scienc-exactes1/arabic-sc-experimentales01.html",
+      "to": "levels/branch/subjects/modul-Scienc-exactes1/islamic-middle01.html",
+      "raw": "islamic-middle01.html",
+      "kind": "attribute"
+    },
+    {
+      "from": "levels/branch/subjects/modul-Scienc-exactes1/arabic-sc-experimentales01.html",
+      "to": "levels/branch/subjects/modul-Scienc-exactes1/Primary01_french.html",
+      "raw": "Primary01_french.html",
+      "kind": "attribute"
+    },
+    {
+      "from": "levels/branch/subjects/modul-Scienc-exactes1/math-sc-experimentales01.html",
+      "to": "levels/branch/subjects/modul-Scienc-exactes1/Primary01_science.html",
+      "raw": "Primary01_science.html",
+      "kind": "attribute"
+    },
+    {
+      "from": "levels/branch/subjects/modul-Scienc-exactes1/smst3/arabic-sc-experimentales01-sem03-more.html",
+      "to": "levels/branch/subjects/modul-Scienc-exactes1/smst3/Primary01_french.html",
+      "raw": "Primary01_french.html",
+      "kind": "attribute"
+    },
+    {
+      "from": "levels/branch/subjects/modul-Scienc-exactes1/smst3/arabic-sc-experimentales01-sem03-more.html",
+      "to": "levels/branch/subjects/modul-Scienc-exactes1/smst3/Primary01_math.html",
+      "raw": "Primary01_math.html",
+      "kind": "attribute"
+    },
+    {
+      "from": "levels/branch/subjects/modul-Scienc-exactes1/smst3/arabic-sc-experimentales01-sem03-more.html",
+      "to": "levels/branch/subjects/modul-Scienc-exactes1/smst3/Primary01_science.html",
+      "raw": "Primary01_science.html",
+      "kind": "attribute"
+    },
+    {
+      "from": "levels/branch/subjects/modul-Scienc-exactes1/smst3/arabic-sc-experimentales01-sem03-more.html",
+      "to": "levels/branch/subjects/modul-Scienc-exactes1/smst3/Primary01_islamic.html",
+      "raw": "Primary01_islamic.html",
+      "kind": "attribute"
+    },
+    {
+      "from": "levels/branch/subjects/modul-Scienc-exactes1/smst2/arabic-sc-experimentales01-sem02-more.html",
+      "to": "levels/branch/subjects/modul-Scienc-exactes1/smst2/Primary01_french.html",
+      "raw": "Primary01_french.html",
+      "kind": "attribute"
+    },
+    {
+      "from": "levels/branch/subjects/modul-Scienc-exactes1/smst2/arabic-sc-experimentales01-sem02-more.html",
+      "to": "levels/branch/subjects/modul-Scienc-exactes1/smst2/Primary01_math.html",
+      "raw": "Primary01_math.html",
+      "kind": "attribute"
+    },
+    {
+      "from": "levels/branch/subjects/modul-Scienc-exactes1/smst2/arabic-sc-experimentales01-sem02-more.html",
+      "to": "levels/branch/subjects/modul-Scienc-exactes1/smst2/Primary01_science.html",
+      "raw": "Primary01_science.html",
+      "kind": "attribute"
+    },
+    {
+      "from": "levels/branch/subjects/modul-Scienc-exactes1/smst2/arabic-sc-experimentales01-sem02-more.html",
+      "to": "levels/branch/subjects/modul-Scienc-exactes1/smst2/Primary01_islamic.html",
+      "raw": "Primary01_islamic.html",
+      "kind": "attribute"
+    },
+    {
+      "from": "levels/branch/subjects/modul-Scienc-exactes1/smst1/arabic-sc-experimentales01-sem01-more.html",
+      "to": "levels/branch/subjects/modul-Scienc-exactes1/smst1/Primary01_french.html",
+      "raw": "Primary01_french.html",
+      "kind": "attribute"
+    },
+    {
+      "from": "levels/branch/subjects/modul-Scienc-exactes1/smst1/arabic-sc-experimentales01-sem01-more.html",
+      "to": "levels/branch/subjects/modul-Scienc-exactes1/smst1/Primary01_math.html",
+      "raw": "Primary01_math.html",
+      "kind": "attribute"
+    },
+    {
+      "from": "levels/branch/subjects/modul-Scienc-exactes1/smst1/arabic-sc-experimentales01-sem01-more.html",
+      "to": "levels/branch/subjects/modul-Scienc-exactes1/smst1/Primary01_science.html",
+      "raw": "Primary01_science.html",
+      "kind": "attribute"
+    },
+    {
+      "from": "levels/branch/subjects/modul-Scienc-exactes1/smst1/arabic-sc-experimentales01-sem01-more.html",
+      "to": "levels/branch/subjects/modul-Scienc-exactes1/smst1/Primary01_islamic.html",
+      "raw": "Primary01_islamic.html",
+      "kind": "attribute"
+    },
+    {
+      "from": "levels/middle/modul-middle04/smst3/math-middle04-sem03-more.html",
+      "to": "../pages/levels.html",
+      "raw": "../../../../../pages/levels.html",
+      "kind": "attribute"
+    },
+    {
+      "from": "levels/middle/modul-middle04/smst3/islamic-middle04-sem03-more.html",
+      "to": "../pages/levels.html",
+      "raw": "../../../../../pages/levels.html",
+      "kind": "attribute"
+    },
+    {
+      "from": "levels/middle/modul-middle04/smst2/islamic-middle04-sem02-more.html",
+      "to": "../pages/levels.html",
+      "raw": "../../../../../pages/levels.html",
+      "kind": "attribute"
+    },
+    {
+      "from": "levels/middle/modul-middle04/smst2/math-middle04-sem02-more.html",
+      "to": "../pages/levels.html",
+      "raw": "../../../../../pages/levels.html",
+      "kind": "attribute"
+    },
+    {
+      "from": "levels/middle/modul-middle04/smst1/math-middle04-sem01-more.html",
+      "to": "../pages/levels.html",
+      "raw": "../../../../../pages/levels.html",
+      "kind": "attribute"
+    },
+    {
+      "from": "levels/middle/modul-middle04/smst1/islamic-middle04-sem01-more.html",
+      "to": "../pages/levels.html",
+      "raw": "../../../../../pages/levels.html",
+      "kind": "attribute"
+    },
+    {
+      "from": "assets/js/pdf-library.js",
+      "to": "assets/js/'+esc(pageUrl(i))+'",
+      "raw": "'+esc(pageUrl(i))+'",
+      "kind": "attribute-like"
+    },
+    {
+      "from": "assets/js/pdf-library.js",
+      "to": "assets/js/'+esc(p)+'",
+      "raw": "'+esc(p)+'",
+      "kind": "attribute-like"
+    },
+    {
+      "from": "assets/js/pdf-library.js",
+      "to": "assets/js/'+esc(dlUrl(d))+'",
+      "raw": "'+esc(dlUrl(d))+'",
+      "kind": "attribute-like"
+    },
+    {
+      "from": "assets/js/subject-drive-library.js",
+      "to": "assets/js/'+escapeHtml(preview)+'",
+      "raw": "'+escapeHtml(preview)+'",
+      "kind": "attribute-like"
+    },
+    {
+      "from": "assets/js/subject-drive-library.js",
+      "to": "assets/js/'+escapeHtml(download)+'",
+      "raw": "'+escapeHtml(download)+'",
+      "kind": "attribute-like"
+    },
+    {
+      "from": "assets/js/my-page.js",
+      "to": "assets/js/' + gridId + '",
+      "raw": "' + gridId + '",
+      "kind": "attribute-like"
+    },
+    {
+      "from": "assets/js/core.js",
+      "to": "assets/js/${item.href}",
+      "raw": "${item.href}",
+      "kind": "attribute-like"
+    }
+  ],
+  "missing_expected_pages": [],
+  "sitemap_missing_pages": [
+    "google4e08a8803a39e9f9.html",
+    "index.html",
+    "offline.html",
+    "pages/my.html",
+    "pages/search.html"
+  ],
+  "stale_archive_links": [
+    {
+      "from": "levels/branch/subjects/modul-Scienc-exactes1/smst3/arabic-sc-experimentales01-sem03-more.html",
+      "to": "levels/branch/subjects/modul-Scienc-exactes1/smst3/Primary01_french.html",
+      "raw": "Primary01_french.html",
+      "kind": "attribute"
+    },
+    {
+      "from": "levels/branch/subjects/modul-Scienc-exactes1/smst3/arabic-sc-experimentales01-sem03-more.html",
+      "to": "levels/branch/subjects/modul-Scienc-exactes1/smst3/Primary01_math.html",
+      "raw": "Primary01_math.html",
+      "kind": "attribute"
+    },
+    {
+      "from": "levels/branch/subjects/modul-Scienc-exactes1/smst3/arabic-sc-experimentales01-sem03-more.html",
+      "to": "levels/branch/subjects/modul-Scienc-exactes1/smst3/Primary01_science.html",
+      "raw": "Primary01_science.html",
+      "kind": "attribute"
+    },
+    {
+      "from": "levels/branch/subjects/modul-Scienc-exactes1/smst3/arabic-sc-experimentales01-sem03-more.html",
+      "to": "levels/branch/subjects/modul-Scienc-exactes1/smst3/Primary01_islamic.html",
+      "raw": "Primary01_islamic.html",
+      "kind": "attribute"
+    },
+    {
+      "from": "levels/branch/subjects/modul-Scienc-exactes1/smst2/arabic-sc-experimentales01-sem02-more.html",
+      "to": "levels/branch/subjects/modul-Scienc-exactes1/smst2/Primary01_french.html",
+      "raw": "Primary01_french.html",
+      "kind": "attribute"
+    },
+    {
+      "from": "levels/branch/subjects/modul-Scienc-exactes1/smst2/arabic-sc-experimentales01-sem02-more.html",
+      "to": "levels/branch/subjects/modul-Scienc-exactes1/smst2/Primary01_math.html",
+      "raw": "Primary01_math.html",
+      "kind": "attribute"
+    },
+    {
+      "from": "levels/branch/subjects/modul-Scienc-exactes1/smst2/arabic-sc-experimentales01-sem02-more.html",
+      "to": "levels/branch/subjects/modul-Scienc-exactes1/smst2/Primary01_science.html",
+      "raw": "Primary01_science.html",
+      "kind": "attribute"
+    },
+    {
+      "from": "levels/branch/subjects/modul-Scienc-exactes1/smst2/arabic-sc-experimentales01-sem02-more.html",
+      "to": "levels/branch/subjects/modul-Scienc-exactes1/smst2/Primary01_islamic.html",
+      "raw": "Primary01_islamic.html",
+      "kind": "attribute"
+    },
+    {
+      "from": "levels/branch/subjects/modul-Scienc-exactes1/smst1/arabic-sc-experimentales01-sem01-more.html",
+      "to": "levels/branch/subjects/modul-Scienc-exactes1/smst1/Primary01_french.html",
+      "raw": "Primary01_french.html",
+      "kind": "attribute"
+    },
+    {
+      "from": "levels/branch/subjects/modul-Scienc-exactes1/smst1/arabic-sc-experimentales01-sem01-more.html",
+      "to": "levels/branch/subjects/modul-Scienc-exactes1/smst1/Primary01_math.html",
+      "raw": "Primary01_math.html",
+      "kind": "attribute"
+    },
+    {
+      "from": "levels/branch/subjects/modul-Scienc-exactes1/smst1/arabic-sc-experimentales01-sem01-more.html",
+      "to": "levels/branch/subjects/modul-Scienc-exactes1/smst1/Primary01_science.html",
+      "raw": "Primary01_science.html",
+      "kind": "attribute"
+    },
+    {
+      "from": "levels/branch/subjects/modul-Scienc-exactes1/smst1/arabic-sc-experimentales01-sem01-more.html",
+      "to": "levels/branch/subjects/modul-Scienc-exactes1/smst1/Primary01_islamic.html",
+      "raw": "Primary01_islamic.html",
+      "kind": "attribute"
+    }
+  ]
+}
