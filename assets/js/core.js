@@ -895,7 +895,7 @@
 
         // Use the live Google Drive manifest on every subject page under /levels/,
         // while preserving any page-specific scripts and the existing shared loader.
-        const isLevelSubjectPage = /^\/levels\//.test(window.location.pathname)
+        const isLevelSubjectPage = /\/levels\//.test(window.location.pathname)
             && document.querySelector('.documents-section')
             && document.querySelector('.documents-grid[id^="latest-documents-"]');
         if (isLevelSubjectPage && !document.querySelector('script[src*="subject-drive-library.js"]')
