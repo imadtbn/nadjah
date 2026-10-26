@@ -37,7 +37,7 @@ for src in files:
  for raw,kind in vals:
   raw=dec(raw)
   if raw.startswith("#") or raw.lower().startswith(IGNORE) or raw.startswith("//"): continue
-  if raw.startswith(SITE): raw=raw[len(SITE):]
+  if raw.startswith(SITE): raw="/"+raw[len(SITE):]
   elif re.match(r"^https?://",raw): continue
   target=resolve(src,raw)
   if target is None: continue
