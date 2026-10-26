@@ -892,6 +892,21 @@
         initPwa();
         initLenisAndGsap();
         initStatistics();
+
+        // Use the live Google Drive manifest on every subject page under /levels/,
+        // while preserving any page-specific scripts and the existing shared loader.
+        const isLevelSubjectPage = /^\\/levels\\//.test(window.location.pathname)
+            && document.querySelector('.documents-section')
+            && document.querySelector('.documents-grid[id^="latest-documents-"]');
+        if (isLevelSubjectPage && !document.querySelector('script[src*="subject-drive-library.js"]')
+            && !window.NadjahSubjectDriveLoaded) {
+            const subjectLibraryScript = document.createElement('script');
+            subjectLibraryScript.src = new URL('subject-drive-library.js?v=drive-manifest-20261026', coreBaseUrl).href;
+            subjectLibraryScript.dataset.subjectDriveLibrary = 'true';
+            subjectLibraryScript.defer = true;
+            document.head.appendChild(subjectLibraryScript);
+        }
+
         const driveConfigScript = document.createElement('script');
         driveConfigScript.src = new URL('google-drive-config.js', coreBaseUrl).href;
         driveConfigScript.dataset.googleDriveConfig = 'true';
