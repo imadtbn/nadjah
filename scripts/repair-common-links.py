@@ -44,9 +44,9 @@ def replacement(src, raw, existing):
             candidate=(folder/f"{subject}-{suffix}.html").as_posix()
             if candidate in existing: return rel_url(src,ROOT/candidate)
     # Repair legacy first-year names found in copied secondary-branch templates.
-    legacy_subject = re.fullmatch(r"(?:Primary01_|(arabic|math|islamic|science|french|history|art|sport|english|physics|technology|accounting|philosophy)-middle01\\.html)", Path(path).name, re.I)
+    legacy_subject = re.fullmatch(r"(?:Primary01_(science|french|math|islamic)|(?:arabic|math|islamic|science|french|history|art|sport|english|physics|technology|accounting|philosophy)-middle01)\.html", Path(path).name, re.I)
     if legacy_subject:
-        raw_subject = (legacy_subject.group(1) or Path(path).stem.replace("Primary01_", "")).lower()
+        raw_subject = (legacy_subject.group(1) or Path(path).stem.replace("Primary01_", "").replace("-middle01", "")).lower()
         parts = src.relative_to(ROOT).parts
         if "modul-Scienc-exactes1" in parts:
             folder = Path(*parts[:parts.index("modul-Scienc-exactes1") + 1])
