@@ -55,13 +55,14 @@ function render(items){
  });
  const stats=document.querySelector('[data-subject-stat="resources"]');
  if(stats) stats.innerHTML=filtered.length+' <small>نموذج</small>';
+ const corrected=filtered.filter(i=>i.corrected===true || i.corrected===1 || i.corrected==='true').length;
  const rate=document.querySelector('[data-subject-stat="correctionRate"]');
- if(rate) rate.innerHTML+(filtered.length?'':'');
+ if(rate) rate.innerHTML=filtered.length?Math.round(corrected/filtered.length*100)+'% <small>مصحح</small>':'0% <small>مصحح</small>';
 }
 function escapeHtml(v){return String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
 function showLoadError(message){
  document.querySelectorAll('.documents-grid[id^="latest-documents-"]').forEach(grid=>{
-  if(!renderedFromCache) grid.innerHTML='<div class="loading-docs">'+escapeHtml(message)+'</div>';
+  if(!renderedFromCache) grid.innerHTML='<div class="loading-docs">'+escapeHtml(message)+' <button type="button" class="retry-drive-library">إعادة المحاولة</button></div>';
  });
 }
 function load(){
@@ -98,6 +99,14 @@ function load(){
  tag.src=endpoint+(endpoint.includes('?')?'&':'?')+'callback='+encodeURIComponent(cb)+'&v='+Date.now();
  document.head.appendChild(tag);
 }
+document.addEventListener('click',event=>{
+ const button=event.target.closest('.retry-drive-library');
+ if(!button)return;
+ event.preventDefault();
+ button.disabled=true;
+ button.textContent='جارٍ إعادة المحاولة...';
+ load();
+});
 const configTag=document.createElement('script');
 configTag.src=config.href;
 configTag.onload=load;
