@@ -43,6 +43,22 @@ def replacement(src, raw, existing):
         if folder and suffix:
             candidate=(folder/f"{subject}-{suffix}.html").as_posix()
             if candidate in existing: return rel_url(src,ROOT/candidate)
+    # Repair legacy first-year names found in copied secondary-branch templates.
+    legacy_subject = re.fullmatch(r"(?:Primary01_|(arabic|math|islamic|science|french|history|art|sport|english|physics|technology|accounting|philosophy)-middle01\\.html)", Path(path).name, re.I)
+    if legacy_subject:
+        raw_subject = (legacy_subject.group(1) or Path(path).stem.replace("Primary01_", "")).lower()
+        parts = src.relative_to(ROOT).parts
+        if "modul-Scienc-exactes1" in parts:
+            folder = Path(*parts[:parts.index("modul-Scienc-exactes1") + 1])
+            aliases = {"science": "science", "math": "math", "islamic": "islamic", "french": "french", "arabic": "arabic", "history": "history", "art": "art", "sport": "sport", "english": "english", "physics": "physics", "technology": "technology", "accounting": "accounting", "philosophy": "philosophy"}
+            candidate = (folder / f"{aliases.get(raw_subject, raw_subject)}-sc-experimentales01.html").as_posix()
+            if candidate in existing:
+                return rel_url(src, ROOT / candidate)
+    # Older guide routes point to primary indexes now stored under levels/primary.
+    if target_rel in {"pages/levels/primary/pri01.html", "pages/primary/primry01.html", "pages/reveal/primary/primry01.html"}:
+        candidate = "levels/primary/primry01.html"
+        if candidate in existing:
+            return rel_url(src, ROOT / candidate)
     # If an archive link is stale, route to the existing subject landing page rather than a dead page.
     if path.endswith("-more.html") and target_rel not in existing:
         name=Path(path).name
