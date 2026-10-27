@@ -65,7 +65,7 @@ if sm_path.exists():
   except Exception: continue
   lowered=page_text.lower()
   if "<head" not in lowered or "<title" not in lowered: continue
-  if re.search(r'<meta\\b(?=[^>]*name=["\\']robots["\\'])(?=[^>]*content=["\\'][^"\\']*noindex)[^>]*>',page_text,re.I): continue
+  if re.search(r"<meta\b(?=[^>]*name=['\"]robots['\"])(?=[^>]*content=['\"][^'\"]*noindex)[^>]*>", page_text, re.I): continue
   if SITE+rel not in listed: results["sitemap_missing_pages"].append(rel)
 for key in ("broken_internal_links","stale_archive_links"):
  seen=set(); out=[]
