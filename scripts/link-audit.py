@@ -55,10 +55,17 @@ for folder,suffix in levels:
 sm_path=ROOT/"sitemap.xml"
 if sm_path.exists():
  sm=sm_path.read_text(encoding="utf-8",errors="replace")
- listed=set(re.findall(r"(?is)<loc>\s*(.*?)\s*</loc>",sm))
+ # Compare decoded URLs so accented filenames are equivalent whether encoded or literal.
+ listed={unquote(html.unescape(value.strip())) for value in re.findall(r"(?is)<loc>\s*(.*?)\s*</loc>",sm)}
  for page in pages:
   rel=page.relative_to(ROOT).as_posix()
   if rel.startswith(("assets/","tools/","partials/")): continue
+  # Only report pages that are complete and intended for indexing.
+  try: page_text=page.read_text(encoding="utf-8",errors="replace")
+  except Exception: continue
+  lowered=page_text.lower()
+  if "<head" not in lowered or "<title" not in lowered: continue
+  if re.search(r'<meta\\b(?=[^>]*name=["\\']robots["\\'])(?=[^>]*content=["\\'][^"\\']*noindex)[^>]*>',page_text,re.I): continue
   if SITE+rel not in listed: results["sitemap_missing_pages"].append(rel)
 for key in ("broken_internal_links","stale_archive_links"):
  seen=set(); out=[]
