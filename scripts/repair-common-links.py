@@ -20,7 +20,7 @@ def replacement(src, raw, existing):
     elif path.startswith("/"): target=(ROOT/path.lstrip("/")).resolve()
     else: target=(src.parent/path).resolve()
     try: target_rel=target.relative_to(ROOT).as_posix()
-    except ValueError: return None
+    except ValueError: target_rel=target.as_posix()
     # Repair stale "Primary01_subject.html" links to the matching actual subject page for that grade.
     m=re.fullmatch(r"Primary01_(science|french|math|islamic)\.html",Path(path).name,re.I)
     if m:
