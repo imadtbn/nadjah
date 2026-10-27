@@ -66,7 +66,9 @@ if sm_path.exists():
   lowered=page_text.lower()
   if "<head" not in lowered or "<title" not in lowered: continue
   if re.search(r"<meta\b(?=[^>]*name=['\"]robots['\"])(?=[^>]*content=['\"][^'\"]*noindex)[^>]*>", page_text, re.I): continue
-  if SITE+rel not in listed: results["sitemap_missing_pages"].append(rel)
+  # index.html is the same public homepage represented by SITE/ in the sitemap.
+  sitemap_url = SITE if rel == "index.html" else SITE+rel
+  if sitemap_url not in listed: results["sitemap_missing_pages"].append(rel)
 for key in ("broken_internal_links","stale_archive_links"):
  seen=set(); out=[]
  for x in results[key]:
