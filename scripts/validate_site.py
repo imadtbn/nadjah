@@ -200,7 +200,10 @@ def main() -> None:
             )
 
         canonical = soup.find("link", rel="canonical")
-        assert canonical and canonical.get("href") == expected_url(path), (path, canonical)
+        canonical_href = canonical.get("href", "") if canonical else ""
+        # GitHub Pages URLs may percent-encode non-ASCII filenames (e.g. Arabic/French accents).
+        # Compare decoded URL forms so equivalent Unicode and percent-encoded paths validate equally.
+        assert canonical and unquote(canonical_href) == expected_url(path), (path, canonical_href, expected_url(path))
         assert len(soup.find_all("meta", attrs={"property": "og:url"})) == 1, path
         assert len(soup.find_all("script", attrs={"type": "application/ld+json"})) == 1, path
 
