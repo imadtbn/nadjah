@@ -32,9 +32,8 @@ for src in files:
   vals += [(x,"xml-loc") for x in re.findall(r"(?is)<loc>\s*(.*?)\s*</loc>",text)]
  if src.suffix.lower()==".css": vals += [(x,"css-url") for x in CSS.findall(text)]
  if src.suffix.lower() in {".js",".mjs"}:
-  # Only inspect literal ES-module import paths in JavaScript. Scanning arbitrary
-  # href/src-like strings inside JS misclassifies template literals and generated URLs
-  # (for example `${item.href}`) as real local files. HTML references are audited above.
+  # Inspect only literal ES-module imports; generated/template URLs are not filesystem paths.
+  vals += [(x,"js-import") for x in IMPORT.findall(text)]
  for raw,kind in vals:
   raw=dec(raw)
   if raw.startswith("#") or raw.lower().startswith(IGNORE) or raw.startswith("//"): continue
