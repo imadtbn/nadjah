@@ -74,10 +74,44 @@ def page_title(path: Path, soup: BeautifulSoup) -> str:
 def page_description(path: Path, soup: BeautifulSoup, title: str) -> str:
     if path.parent == ROOT / "pages" and path.name in PAGE_DESCRIPTIONS:
         return PAGE_DESCRIPTIONS[path.name]
+
+    if path.parent == ROOT / "resources":
+        resource_id = path.stem
+        try:
+            catalog = json.loads((ROOT / "assets" / "data" / "resources.json").read_text(encoding="utf-8"))
+            resource = next((item for item in catalog.get("resources", []) if item.get("id") == resource_id), None)
+        except (OSError, json.JSONDecodeError):
+            resource = None
+        if resource:
+            parts = [compact(str(resource.get("title", "")))]
+            subject = compact(str(resource.get("subject", "")))
+            if subject and subject not in parts[0]:
+                parts.append("مادة " + subject)
+            level = compact(str(resource.get("levelLabel", "")))
+            if level:
+                parts.append(level)
+            branch = compact(str(resource.get("branch", "")))
+            if branch:
+                parts.append("شعبة " + branch)
+            semester = resource.get("semester")
+            if semester:
+                parts.append("الفصل " + str(semester))
+            kind = {"homework": "فرض", "exam": "اختبار", "exercise": "تمرين", "revision": "مراجعة"}.get(resource.get("type"), "مورد تعليمي")
+            parts.append(kind + (" مع التصحيح" if resource.get("corrected") else " بدون تصحيح"))
+            if resource.get("previewUrl") or resource.get("downloadUrl"):
+                parts.append("روابط PDF المتاحة للمعاينة أو التحميل")
+            else:
+                parts.append("تفاصيل المورد وحالة توفر الملف")
+            description = "، ".join(part for part in parts if part)
+            return description[:190].rstrip(" ،،") + ("…" if len(description) > 190 else "")
+
     heading = soup.find("h1")
     if heading:
-        return f"{compact(heading.get_text(' ', strip=True))} في منصة النجاح: نماذج فروض واختبارات وتمارين تعليمية بصيغة PDF مع تنظيم حسب المستوى والمادة."
-    return f"{title}. نماذج فروض واختبارات وموارد تعليمية مجانية للطلاب والأساتذة في الجزائر."
+        heading_text = compact(heading.get_text(" ", strip=True))
+        if path.name.endswith("-more.html"):
+            return f"{heading_text}: أرشيف نماذج الفروض والاختبارات حسب المادة والفصل، مع روابط الملفات المتاحة."
+        return f"{heading_text} في منصة النجاح: نماذج فروض واختبارات وتمارين مرتبة حسب الطور والسنة والمادة."
+    return f"{title}. موارد تعليمية للطلاب والأساتذة في الجزائر، مع تصفح النماذج حسب المستوى والمادة."
 
 
 def breadcrumbs(path: Path, title: str, canonical: str) -> list[dict[str, object]]:
