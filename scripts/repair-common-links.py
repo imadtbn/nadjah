@@ -34,6 +34,10 @@ def replacement(src, raw, existing):
                 suffix=p.replace("modul-",""); folder=Path(*parts[:i+1]); break
             if p == "modul-secondary01":
                 suffix="secondary01"; folder=Path(*parts[:i+1]); break
+            if p == "modul-Scienc-exactes1":
+                # Older templates inside this secondary branch used Primary01_* and
+                # middle01_* names. Map them to the equivalent first-year branch subject.
+                suffix="sc-experimentales01"; folder=Path(*parts[:i+1]); break
             if p.startswith("modul-middle"):
                 suffix=p.replace("modul-",""); folder=Path(*parts[:i+1]); break
         if folder and suffix:
@@ -48,6 +52,9 @@ def replacement(src, raw, existing):
             try: candidate_rel=candidate.relative_to(ROOT).as_posix()
             except ValueError: candidate_rel=""
             if candidate_rel in existing: return rel_url(src,candidate)
+    # Repair obsolete BEM links only when the project has a dedicated exams index.
+    if Path(path).name.lower() == "middle-bem.html" and "pages/dzexams.html" in existing:
+        return rel_url(src, ROOT/"pages/dzexams.html")
     # A common old root/section route should point to the current levels index.
     if Path(path).name == "levels.html" and "pages/levels.html" in existing:
         return rel_url(src,ROOT/"pages/levels.html")
